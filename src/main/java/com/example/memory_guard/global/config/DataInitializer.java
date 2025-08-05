@@ -32,6 +32,7 @@ public class DataInitializer implements ApplicationRunner {
     if (userRepository.findByUserId("guard1").isEmpty()) {
       User guardian = User.builder()
           .userId("guard1")
+          .username("가디언1")
           .password(passwordEncoder.encode("guard1"))
           .build();
       guardian.addRole(guardRole);
@@ -40,6 +41,7 @@ public class DataInitializer implements ApplicationRunner {
       if (userRepository.findByUserId("user1").isEmpty()) {
         User user = User.builder()
             .userId("user1")
+            .username("사용자1")
             .password(passwordEncoder.encode("user1"))
             .build();
         user.addRole(userRole);

@@ -54,6 +54,7 @@ class UserRepositoryTest {
         String userId = "testUser";
         User member = User.builder()
             .userId(userId)
+            .username("테스트사용자")
             .password("password123")
             .build();
         member.addRole(roleUser);
@@ -78,6 +79,7 @@ class UserRepositoryTest {
     void saveUserTest() {
         User member = User.builder()
             .userId("newUser")
+            .username("새사용자")
             .password("newPassword")
             .build();
         member.addRole(roleUser);
@@ -100,6 +102,7 @@ class UserRepositoryTest {
     void findByIdTest() {
         User member = User.builder()
             .userId("user123")
+            .username("사용자123")
             .password("pass123")
             .build();
         member.addRole(roleUser);
@@ -120,6 +123,7 @@ class UserRepositoryTest {
     void deleteUserTest() {
         User member = User.builder()
             .userId("deleteUser")
+            .username("삭제사용자")
             .password("deletePass")
             .build();
         member.addRole(roleUser);
@@ -141,10 +145,10 @@ class UserRepositoryTest {
     @Test
     @DisplayName("모든 회원 조회 테스트")
     void findAllUsersTest() {
-        User member1 = User.builder().userId("user1").password("pass1").build();
+        User member1 = User.builder().userId("user1").username("사용자1").password("pass1").build();
         member1.addRole(roleUser);
 
-        User member2 = User.builder().userId("user2").password("pass2").build();
+        User member2 = User.builder().userId("user2").username("사용자2").password("pass2").build();
         member2.addRole(roleGuard);
 
         entityManager.persist(member1);
@@ -160,11 +164,11 @@ class UserRepositoryTest {
     @Test
     @DisplayName("중복 userId 저장 시 예외 발생 테스트")
     void saveDuplicateUserIdTest() {
-        User member1 = User.builder().userId("duplicateUser").password("pass1").build();
+        User member1 = User.builder().userId("duplicateUser").username("중복사용자1").password("pass1").build();
         member1.addRole(roleUser);
         userRepository.saveAndFlush(member1);
 
-        User member2 = User.builder().userId("duplicateUser").password("pass2").build();
+        User member2 = User.builder().userId("duplicateUser").username("중복사용자2").password("pass2").build();
         member2.addRole(roleGuard);
 
         assertThatThrownBy(() -> {
@@ -178,6 +182,7 @@ class UserRepositoryTest {
     void updateUserTest() {
         User member = User.builder()
             .userId("updateUser")
+            .username("업데이트사용자")
             .password("originalPass")
             .build();
         member.addRole(roleUser);
@@ -203,12 +208,14 @@ class UserRepositoryTest {
     void should_save_and_find_user_with_guardian_relationship() {
         User guardian = User.builder()
             .userId("guardian_test")
+            .username("가디언테스트")
             .password("pass_g")
             .build();
         guardian.addRole(roleGuard);
 
         User ward = User.builder()
             .userId("ward_test")
+            .username("피보호자테스트")
             .password("pass_w")
             .build();
         ward.addRole(roleUser);
@@ -232,5 +239,74 @@ class UserRepositoryTest {
 
         assertThat(foundGuardian.getWards()).hasSize(1);
         assertThat(foundGuardian.getWards().get(0).getId()).isEqualTo(foundWard.getId());
+    }
+
+    @Test
+    @DisplayName("username으로 회원 조회 - 존재하는 회원")
+    void findByUsernameExistingUserTest() {
+        // given
+        String username = "테스트유저명";
+        User member = User.builder()
+            .userId("testUserId")
+            .username(username)
+            .password("password123")
+            .build();
+        member.addRole(roleUser);
+
+        entityManager.persist(member);
+        entityManager.flush();
+
+        Optional<User> foundUserOpt = userRepository.findByUsername(username);
+
+        assertThat(foundUserOpt).isPresent();
+        User foundUser = foundUserOpt.get();
+
+        assertThat(foundUser.getUsername()).isEqualTo(username);
+        assertThat(foundUser.getUserId()).isEqualTo("testUserId");
+    }
+
+    @Test
+    @DisplayName("username 존재 여부 확인 테스트")
+    void existsByUsernameTest() {
+        // given
+        String username = "존재하는유저명";
+        User member = User.builder()
+            .userId("existUser")
+            .username(username)
+            .password("password123")
+            .build();
+        member.addRole(roleUser);
+
+        entityManager.persist(member);
+        entityManager.flush();
+
+        boolean exists = userRepository.existsByUsername(username);
+        boolean notExists = userRepository.existsByUsername("존재하지않는유저명");
+
+        assertThat(exists).isTrue();
+        assertThat(notExists).isFalse();
+    }
+
+    @Test
+    @DisplayName("중복 username 저장 시 예외 발생 테스트")
+    void saveDuplicateUsernameTest() {
+        User member1 = User.builder()
+            .userId("user1")
+            .username("중복유저명")
+            .password("pass1")
+            .build();
+        member1.addRole(roleUser);
+        userRepository.saveAndFlush(member1);
+
+        User member2 = User.builder()
+            .userId("user2")
+            .username("중복유저명")
+            .password("pass2")
+            .build();
+        member2.addRole(roleGuard);
+
+        assertThatThrownBy(() -> {
+            userRepository.saveAndFlush(member2);
+        }).isInstanceOf(DataIntegrityViolationException.class);
     }
 }

@@ -21,6 +21,7 @@ class UserTest {
 
         User member = User.builder()
             .userId(userId)
+            .username("테스트사용자")
             .password(password)
             .build();
 
@@ -45,6 +46,7 @@ class UserTest {
 
         User member = User.builder()
             .userId(userId)
+            .username("사용자1")
             .password(password)
             .build();
         member.addRole(userRole);
@@ -64,6 +66,7 @@ class UserTest {
 
         User member = User.builder()
             .userId(userId)
+            .username("사용자2")
             .password(password)
             .build();
 
@@ -83,6 +86,7 @@ class UserTest {
 
         User member = User.builder()
             .userId(userId)
+            .username("테스트아이디")
             .password(password)
             .build();
         member.addRole(userRole);
@@ -98,6 +102,7 @@ class UserTest {
     void addDuplicateRoleTest() {
         User member = User.builder()
             .userId("testUser")
+            .username("테스트유저")
             .password("password")
             .build();
         Role userRole = Role.builder().name("ROLE_USER").build();
@@ -114,13 +119,13 @@ class UserTest {
     void memberEqualityTest() {
         Role userRole = Role.builder().name("ROLE_USER").build();
 
-        User member1 = User.builder().userId("user1").password("pass1").build();
+        User member1 = User.builder().userId("user1").username("사용자1").password("pass1").build();
         member1.addRole(userRole);
 
-        User member2 = User.builder().userId("user1").password("pass1").build();
+        User member2 = User.builder().userId("user1").username("중복사용자1").password("pass1").build();
         member2.addRole(userRole);
 
-        User member3 = User.builder().userId("user2").password("pass1").build();
+        User member3 = User.builder().userId("user2").username("사용자2").password("pass1").build();
         member3.addRole(userRole);
 
         assertThat(member1).isNotEqualTo(member2);
@@ -132,6 +137,7 @@ class UserTest {
     void memberNullValuesTest() {
         User member = User.builder()
             .userId(null)
+            .username(null)
             .password(null)
             .build();
 
@@ -146,11 +152,13 @@ class UserTest {
     void should_set_bidirectional_relationship_when_adding_ward() {
             User guardian = User.builder()
             .userId("guardian1")
+            .username("가디언1")
             .password("guardianPass")
             .build();
 
         User ward = User.builder()
             .userId("ward1")
+            .username("피보호자1")
             .password("wardPass")
             .build();
 

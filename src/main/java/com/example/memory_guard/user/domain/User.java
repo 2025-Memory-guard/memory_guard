@@ -24,6 +24,9 @@ public class User {
   @Column(unique = true, nullable = false)
   private String userId;
 
+  @Column(unique = true, nullable = false)
+  private String username;
+
   @Column(nullable = false)
   private String password;
 
@@ -43,8 +46,9 @@ public class User {
   private List<User> wards = new ArrayList<>();
 
   @Builder
-  public User(String userId, String password) {
+  public User(String userId, String username, String password) {
     this.userId = userId;
+    this.username = username;
     this.password = password;
   }
 

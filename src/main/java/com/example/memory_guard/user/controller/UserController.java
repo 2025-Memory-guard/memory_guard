@@ -2,6 +2,8 @@ package com.example.memory_guard.user.controller;
 
 import com.example.memory_guard.user.dto.LoginResponseDto;
 import com.example.memory_guard.user.dto.LoginRequestDto;
+import com.example.memory_guard.user.dto.SignupRequestDto;
+import com.example.memory_guard.user.dto.GuardSignupRequestDto;
 import com.example.memory_guard.global.auth.dto.TokenDto;
 import com.example.memory_guard.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,6 +25,26 @@ public class UserController {
 
   @Value ("${jwt.refresh-token-expiration-seconds}")
   private long refreshTokenValiditySeconds;
+
+  @PostMapping("/ward/signup")
+  public ResponseEntity<String> signup(@RequestBody SignupRequestDto signupDto) {
+    try {
+      userService.signup(signupDto);
+      return ResponseEntity.ok("회원가입이 완료되었습니다.");
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
+
+  @PostMapping("/guard/signup")
+  public ResponseEntity<String> guardSignup(@RequestBody GuardSignupRequestDto signupDto) {
+    try {
+      userService.guardSignup(signupDto);
+      return ResponseEntity.ok("보호자 회원가입이 완료되었습니다.");
+    } catch (IllegalArgumentException | IllegalStateException e) {
+      return ResponseEntity.badRequest().body(e.getMessage());
+    }
+  }
 
   @PostMapping("/user/login")
   public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginDto, HttpServletResponse response) {
