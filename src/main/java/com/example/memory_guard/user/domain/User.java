@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -21,14 +22,8 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(unique = true, nullable = false)
-  private String userId;
-
-  @Column(unique = true, nullable = false)
-  private String username;
-
-  @Column(nullable = false)
-  private String password;
+  @Embedded
+  private UserProfile userProfile;
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
@@ -38,18 +33,15 @@ public class User {
   )
   private Set<Role> roles = new HashSet<>();
 
-  @ManyToOne
-  @JoinColumn(name = "guardian_id")
-  private User guardian;
+  @OneToMany(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
+  private List<GuardUserLink> wards = new ArrayList<>();
 
-  @OneToMany(mappedBy = "guardian")
-  private List<User> wards = new ArrayList<>();
+  @OneToOne(mappedBy = "ward", cascade = CascadeType.PERSIST, orphanRemoval = true)
+  private GuardUserLink guardian;
 
   @Builder
-  public User(String userId, String username, String password) {
-    this.userId = userId;
-    this.username = username;
-    this.password = password;
+  public User(UserProfile userProfile) {
+    this.userProfile = userProfile;
   }
 
   public void addRole(Role role) {
@@ -57,9 +49,22 @@ public class User {
   }
 
   public void addWard(User ward){
-    this.wards.add(ward);
-    ward.setGuardian(this);
+    GuardUserLink guardUserLink = new GuardUserLink(this, ward);
+    this.wards.add(guardUserLink);
+    ward.setGuardian(guardUserLink);
   }
 
-  public void setGuardian(User guardian) {this.guardian = guardian;}
+  public void setGuardian(GuardUserLink guardUserLink) {
+    this.guardian = guardUserLink;
+  }
+
+  public List<User> getWards(){
+    return wards.stream()
+        .map(GuardUserLink::getWard)
+        .collect(Collectors.toList());
+  }
+
+  public User getGuardian(){
+    return this.guardian != null ? guardian.getGuardian() : null;
+  }
 }

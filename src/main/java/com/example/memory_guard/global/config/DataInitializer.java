@@ -2,6 +2,7 @@ package com.example.memory_guard.global.config;
 
 import com.example.memory_guard.user.domain.Role;
 import com.example.memory_guard.user.domain.User;
+import com.example.memory_guard.user.domain.UserProfile;
 import com.example.memory_guard.user.domain.repository.RoleRepository;
 import com.example.memory_guard.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,20 +30,26 @@ public class DataInitializer implements ApplicationRunner {
         roleRepository.save(Role.builder().name("ROLE_GUARD").build())
     );
 
-    if (userRepository.findByUserId("guard1").isEmpty()) {
-      User guardian = User.builder()
+    if (userRepository.findByUserProfileUserId("guard1").isEmpty()) {
+      UserProfile guardianProfile = UserProfile.builder()
           .userId("guard1")
           .username("가디언1")
           .password(passwordEncoder.encode("guard1"))
           .build();
+      User guardian = User.builder()
+          .userProfile(guardianProfile)
+          .build();
       guardian.addRole(guardRole);
       userRepository.save(guardian);
 
-      if (userRepository.findByUserId("user1").isEmpty()) {
-        User user = User.builder()
+      if (userRepository.findByUserProfileUserId("user1").isEmpty()) {
+        UserProfile userProfile = UserProfile.builder()
             .userId("user1")
             .username("사용자1")
             .password(passwordEncoder.encode("user1"))
+            .build();
+        User user = User.builder()
+            .userProfile(userProfile)
             .build();
         user.addRole(userRole);
 

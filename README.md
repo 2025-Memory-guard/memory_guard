@@ -50,3 +50,8 @@ JWT(Access Token, Refresh Token)를 기반
 -   **Response (401 Unauthorized)**:
     - Refresh Token이 없거나 유효하지 않을 경우 발생합니다.
     - **Body**: `"Refresh Token이 없습니다."` 또는 `"유효하지 않은 Refresh Token 입니다. 다시 로그인해주세요."`
+
+
+
+
+

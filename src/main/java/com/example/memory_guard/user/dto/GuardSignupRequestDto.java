@@ -1,11 +1,10 @@
 package com.example.memory_guard.user.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class GuardSignupRequestDto {
-  private String userId;
-  private String username;
-  private String password;
+@EqualsAndHashCode(callSuper = true)
+public class GuardSignupRequestDto extends SignupRequestDto {
   private String wardUserId;
 }

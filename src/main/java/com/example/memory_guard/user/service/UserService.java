@@ -1,5 +1,6 @@
 package com.example.memory_guard.user.service;
 
+import com.example.memory_guard.user.domain.UserProfile;
 import com.example.memory_guard.user.dto.LoginResponseDto;
 import com.example.memory_guard.user.dto.SignupRequestDto;
 import com.example.memory_guard.user.dto.GuardSignupRequestDto;
@@ -30,80 +31,38 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   public void signup(SignupRequestDto signupRequest) {
-    if (userRepository.findByUserId(signupRequest.getUserId()).isPresent()) {
-      throw new IllegalArgumentException("이미 존재하는 사용자 ID입니다.");
-    }
+    isDupUser(signupRequest);
 
-    if (userRepository.existsByUsername(signupRequest.getUsername())) {
-      throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
-    }
+    User user = createUser(signupRequest);
+    setRole(user, "ROLE_USER");
 
-    Role userRole = roleRepository.findByName("ROLE_USER")
-        .orElseThrow(() -> new IllegalStateException("ROLE_USER가 존재하지 않습니다."));
-
-    User user = User.builder()
-        .userId(signupRequest.getUserId())
-        .username(signupRequest.getUsername())
-        .password(passwordEncoder.encode(signupRequest.getPassword()))
-        .build();
-
-    user.addRole(userRole);
     userRepository.save(user);
   }
 
   public void guardSignup(GuardSignupRequestDto signupRequest) {
-    if (userRepository.findByUserId(signupRequest.getUserId()).isPresent()) {
-      throw new IllegalArgumentException("이미 존재하는 사용자 ID입니다.");
-    }
+    isDupUser(signupRequest);
 
-    if (userRepository.existsByUsername(signupRequest.getUsername())) {
-      throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
-    }
-
-    User ward = userRepository.findByUserId(signupRequest.getWardUserId())
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 피보호자입니다."));
-
-    boolean hasUserRole = ward.getRoles().stream()
-        .anyMatch(role -> "ROLE_USER".equals(role.getName()));
-    
-    if (!hasUserRole) {
-      throw new IllegalArgumentException("해당 사용자는 피보호자 권한이 없습니다.");
-    }
-
-    Role guardRole = roleRepository.findByName("ROLE_GUARD")
-        .orElseThrow(() -> new IllegalStateException("ROLE_GUARD가 존재하지 않습니다."));
-
-    User guardian = User.builder()
-        .userId(signupRequest.getUserId())
-        .username(signupRequest.getUsername())
-        .password(passwordEncoder.encode(signupRequest.getPassword()))
-        .build();
+    User ward = isValidWardUser(signupRequest);
+    User guardian = createUser(signupRequest);
 
     guardian.addWard(ward);
-    guardian.addRole(guardRole);
+    setRole(guardian, "ROLE_GUARD");
     userRepository.save(guardian);
   }
 
   public TokenDto login(String userId, String password) {
 
-    User user = userRepository.findByUserId(userId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
+    User user = isExistUser(userId, password);
 
-    if (!passwordEncoder.matches(password, user.getPassword())) {
-      throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-    }
+    List<GrantedAuthority> authorities = createGrantedAuthority(user);
 
-    List<GrantedAuthority> authorities = user.getRoles().stream()
-        .map(role -> new SimpleGrantedAuthority(role.getName()))
-        .collect(Collectors.toList());
-
-    Authentication authentication = new UsernamePasswordAuthenticationToken(user.getUserId(), null, authorities);
+    Authentication authentication = new UsernamePasswordAuthenticationToken(user.getUserProfile().getUserId(), null, authorities);
 
     return jwtProvider.generateToken(authentication);
   }
 
   public List<String> getUserRoles(String userId) {
-    User user = userRepository.findByUserId(userId)
+    User user = userRepository.findByUserProfileUserId(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
     
     return user.getRoles().stream()
@@ -118,18 +77,75 @@ public class UserService {
 
     String userId = jwtProvider.getUserIdFromToken(refreshToken);
 
-    User user = userRepository.findByUserId(userId)
+    User user = userRepository.findByUserProfileUserId(userId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
     String authorities = user.getRoles().stream()
         .map(role -> role.getName())
         .collect(Collectors.joining(","));
 
-    String newAccessToken = jwtProvider.createAccessToken(user.getUserId(), authorities);
+    String newAccessToken = jwtProvider.createAccessToken(user.getUserProfile().getUserId(), authorities);
 
     return LoginResponseDto.builder()
         .grantType("Bearer")
         .accessToken(newAccessToken)
         .build();
+  }
+
+  private User isExistUser(String userId, String password) {
+    User user = userRepository.findByUserProfileUserId(userId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
+
+    if (!passwordEncoder.matches(password, user.getUserProfile().getPassword())) {
+      throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+    }
+    return user;
+  }
+
+  private User isValidWardUser(GuardSignupRequestDto signupRequest) {
+    User ward = userRepository.findByUserProfileUserId(signupRequest.getWardUserId())
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 피보호자입니다."));
+
+    boolean hasUserRole = ward.getRoles().stream()
+        .anyMatch(role -> "ROLE_USER".equals(role.getName()));
+
+    if (!hasUserRole) {
+      throw new IllegalArgumentException("해당 사용자는 피보호자 권한이 없습니다.");
+    }
+    return ward;
+  }
+
+  private void setRole(User user, String role) {
+    Role userRole  = roleRepository.findByName(role)
+        .orElseThrow(() -> new IllegalStateException(role + "가 존재하지 않습니다."));
+
+    user.addRole(userRole);
+  }
+
+  private User createUser(SignupRequestDto signupRequest) {
+    UserProfile userProfile = UserProfile.builder()
+        .userId(signupRequest.getUserId())
+        .password(passwordEncoder.encode(signupRequest.getPassword()))
+        .username(signupRequest.getUsername())
+        .build();
+
+    return User.builder().userProfile(userProfile).build();
+  }
+
+  private static List<GrantedAuthority> createGrantedAuthority(User user) {
+    List<GrantedAuthority> authorities = user.getRoles().stream()
+        .map(role -> new SimpleGrantedAuthority(role.getName()))
+        .collect(Collectors.toList());
+    return authorities;
+  }
+
+  private void isDupUser(SignupRequestDto signupRequest) {
+    if (userRepository.findByUserProfileUserId(signupRequest.getUserId()).isPresent()) {
+      throw new IllegalArgumentException("이미 존재하는 사용자 ID입니다.");
+    }
+
+    if (userRepository.existsByUserProfileUsername(signupRequest.getUsername())) {
+      throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+    }
   }
 }
