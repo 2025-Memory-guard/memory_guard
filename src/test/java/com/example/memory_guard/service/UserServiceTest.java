@@ -1,5 +1,6 @@
 package com.example.memory_guard.service;
 
+import com.example.memory_guard.global.exception.custom.InvalidRequestException;
 import com.example.memory_guard.user.dto.GuardSignupRequestDto;
 import com.example.memory_guard.user.dto.SignupRequestDto;
 import com.example.memory_guard.user.domain.Role;
@@ -106,7 +107,7 @@ class UserServiceTest {
         when(userRepository.findByUserProfileUserId("guard1")).thenReturn(Optional.of(existingUser));
 
         assertThatThrownBy(() -> userService.guardSignup(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessage("이미 존재하는 사용자 ID입니다.");
     }
 
@@ -123,7 +124,7 @@ class UserServiceTest {
         when(userRepository.existsByUserProfileUsername("보호자1")).thenReturn(true);
 
         assertThatThrownBy(() -> userService.guardSignup(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessage("이미 존재하는 사용자명입니다.");
     }
 
@@ -141,7 +142,7 @@ class UserServiceTest {
         when(userRepository.findByUserProfileUserId("nonexistent")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.guardSignup(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessage("존재하지 않는 피보호자입니다.");
     }
 
@@ -168,7 +169,7 @@ class UserServiceTest {
         when(userRepository.findByUserProfileUserId("ward1")).thenReturn(Optional.of(wardWithoutUserRole));
 
         assertThatThrownBy(() -> userService.guardSignup(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessage("해당 사용자는 피보호자 권한이 없습니다.");
     }
 
@@ -230,7 +231,7 @@ class UserServiceTest {
         when(userRepository.findByUserProfileUserId("user1")).thenReturn(Optional.of(existingUser));
 
         assertThatThrownBy(() -> userService.signup(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessage("이미 존재하는 사용자 ID입니다.");
     }
 
@@ -246,7 +247,7 @@ class UserServiceTest {
         when(userRepository.existsByUserProfileUsername("사용자1")).thenReturn(true);
 
         assertThatThrownBy(() -> userService.signup(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(InvalidRequestException.class)
             .hasMessage("이미 존재하는 사용자명입니다.");
     }
 }

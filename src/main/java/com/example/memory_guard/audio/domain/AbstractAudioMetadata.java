@@ -1,15 +1,18 @@
 package com.example.memory_guard.audio.domain;
 
+import com.example.memory_guard.audio.domain.feedback.AbstractEvaluationFeedback;
 import com.example.memory_guard.user.domain.User;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -37,6 +40,9 @@ public abstract class AbstractAudioMetadata {
   @Column(name = "duration")
   private Long duration;
 
+  @OneToMany(mappedBy = "audioMetadata")
+  private List<AbstractEvaluationFeedback> evaluationFeedbacks;
+
   @CreatedDate
   @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
@@ -58,5 +64,5 @@ public abstract class AbstractAudioMetadata {
     this.duration = duration;
   }
 
-  public abstract String getAccessUri();
+  public abstract File getFile() throws IOException;
 }

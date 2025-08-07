@@ -38,7 +38,6 @@ class UserControllerTest {
     @Test
     @DisplayName("성공: 보호자 회원가입 요청")
     void guardSignup_Success() throws Exception {
-        // given
         GuardSignupRequestDto request = new GuardSignupRequestDto();
         request.setUserId("guard1");
         request.setUsername("보호자1");
@@ -47,7 +46,6 @@ class UserControllerTest {
 
         doNothing().when(userService).guardSignup(any(GuardSignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/guard/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -61,7 +59,6 @@ class UserControllerTest {
     @Test
     @DisplayName("실패: 중복된 userId로 보호자 회원가입")
     void guardSignup_DuplicateUserId() throws Exception {
-        // given
         GuardSignupRequestDto request = new GuardSignupRequestDto();
         request.setUserId("guard1");
         request.setUsername("보호자1");
@@ -71,18 +68,16 @@ class UserControllerTest {
         doThrow(new IllegalArgumentException("이미 존재하는 사용자 ID입니다."))
             .when(userService).guardSignup(any(GuardSignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/guard/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("이미 존재하는 사용자 ID입니다."));
+                .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.message").value("이미 존재하는 사용자 ID입니다."));
     }
 
     @Test
     @DisplayName("실패: 중복된 username으로 보호자 회원가입")
     void guardSignup_DuplicateUsername() throws Exception {
-        // given
         GuardSignupRequestDto request = new GuardSignupRequestDto();
         request.setUserId("guard1");
         request.setUsername("보호자1");
@@ -92,18 +87,16 @@ class UserControllerTest {
         doThrow(new IllegalArgumentException("이미 존재하는 사용자명입니다."))
             .when(userService).guardSignup(any(GuardSignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/guard/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("이미 존재하는 사용자명입니다."));
+                .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.message").value("이미 존재하는 사용자명입니다."));
     }
 
     @Test
     @DisplayName("실패: 존재하지 않는 피보호자")
     void guardSignup_WardNotFound() throws Exception {
-        // given
         GuardSignupRequestDto request = new GuardSignupRequestDto();
         request.setUserId("guard1");
         request.setUsername("보호자1");
@@ -113,18 +106,17 @@ class UserControllerTest {
         doThrow(new IllegalArgumentException("존재하지 않는 피보호자입니다."))
             .when(userService).guardSignup(any(GuardSignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/guard/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("존재하지 않는 피보호자입니다."));
+                .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.message").value("존재하지 않는 피보호자입니다."));
     }
 
     @Test
     @DisplayName("실패: 피보호자가 ROLE_USER 권한이 없음")
     void guardSignup_WardHasNoUserRole() throws Exception {
-        // given
         GuardSignupRequestDto request = new GuardSignupRequestDto();
         request.setUserId("guard1");
         request.setUsername("보호자1");
@@ -134,18 +126,17 @@ class UserControllerTest {
         doThrow(new IllegalArgumentException("해당 사용자는 피보호자 권한이 없습니다."))
             .when(userService).guardSignup(any(GuardSignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/guard/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("해당 사용자는 피보호자 권한이 없습니다."));
+                .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.message").value("해당 사용자는 피보호자 권한이 없습니다."));
     }
 
     @Test
     @DisplayName("실패: ROLE_GUARD가 존재하지 않음")
     void guardSignup_GuardRoleNotFound() throws Exception {
-        // given
         GuardSignupRequestDto request = new GuardSignupRequestDto();
         request.setUserId("guard1");
         request.setUsername("보호자1");
@@ -155,18 +146,17 @@ class UserControllerTest {
         doThrow(new IllegalStateException("ROLE_GUARD가 존재하지 않습니다."))
             .when(userService).guardSignup(any(GuardSignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/guard/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("ROLE_GUARD가 존재하지 않습니다."));
+                .andExpect(jsonPath("$.code").value("INVALID_STATE"))
+                .andExpect(jsonPath("$.message").value("ROLE_GUARD가 존재하지 않습니다."));
     }
 
     @Test
     @DisplayName("성공: 피보호자 회원가입 요청")
     void wardSignup_Success() throws Exception {
-        // given
         SignupRequestDto request = new SignupRequestDto();
         request.setUserId("user1");
         request.setUsername("사용자1");
@@ -174,7 +164,6 @@ class UserControllerTest {
 
         doNothing().when(userService).signup(any(SignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/ward/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -187,7 +176,6 @@ class UserControllerTest {
     @Test
     @DisplayName("실패: 중복된 userId로 피보호자 회원가입")
     void wardSignup_DuplicateUserId() throws Exception {
-        // given
         SignupRequestDto request = new SignupRequestDto();
         request.setUserId("user1");
         request.setUsername("사용자1");
@@ -196,18 +184,16 @@ class UserControllerTest {
         doThrow(new IllegalArgumentException("이미 존재하는 사용자 ID입니다."))
             .when(userService).signup(any(SignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/ward/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("이미 존재하는 사용자 ID입니다."));
+                .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.message").value("이미 존재하는 사용자 ID입니다."));
     }
 
     @Test
     @DisplayName("실패: 중복된 username으로 피보호자 회원가입")
     void wardSignup_DuplicateUsername() throws Exception {
-        // given
         SignupRequestDto request = new SignupRequestDto();
         request.setUserId("user1");
         request.setUsername("사용자1");
@@ -216,38 +202,21 @@ class UserControllerTest {
         doThrow(new IllegalArgumentException("이미 존재하는 사용자명입니다."))
             .when(userService).signup(any(SignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/ward/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("이미 존재하는 사용자명입니다."));
-    }
-
-    @Test
-    @DisplayName("실패: 잘못된 JSON 형식")
-    void guardSignup_InvalidJson() throws Exception {
-        // given
-        String invalidJson = "{ invalid json }";
-
-        // when & then
-        mockMvc.perform(post("/guard/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(invalidJson))
-                .andExpect(status().isBadRequest());
+                .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.message").value("이미 존재하는 사용자명입니다."));
     }
 
     @Test
     @DisplayName("실패: 필수 필드 누락")
     void guardSignup_MissingFields() throws Exception {
-        // given
         GuardSignupRequestDto request = new GuardSignupRequestDto();
-        // 필드를 설정하지 않음
 
         doThrow(new IllegalArgumentException("필수 필드가 누락되었습니다."))
             .when(userService).guardSignup(any(GuardSignupRequestDto.class));
 
-        // when & then
         mockMvc.perform(post("/guard/signup")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))

@@ -5,6 +5,7 @@ import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.domain.LocalAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
 import com.example.memory_guard.audio.service.AudioService;
+import com.example.memory_guard.global.exception.GlobalExceptionHandler;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.domain.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,8 +28,10 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@WebMvcTest(controllers = AudioController.class, 
+@WebMvcTest(controllers = {AudioController.class, GlobalExceptionHandler.class}, 
     excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ActiveProfiles("test")
 class AudioControllerTest {
@@ -41,6 +44,9 @@ class AudioControllerTest {
 
     @MockitoBean
     private AudioMetadataRepository audioMetadataRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private MockMultipartFile mockAudioFile;
     private User testUser;
@@ -111,7 +117,8 @@ class AudioControllerTest {
                 }))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("오디오 파일이 비어있습니다."));
+                .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.message").value("오디오 파일이 비어있습니다."));
 
         verify(audioService, never()).saveAudio(any(), any(User.class));
     }
@@ -130,7 +137,7 @@ class AudioControllerTest {
                 }))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("서버 오류가 발생했습니다: 파일 저장 실패"));
+                .andExpect(jsonPath("$.code").value("FILE_IO_ERROR"));
 
         verify(audioService).saveAudio(any(), any(User.class));
     }
@@ -149,7 +156,8 @@ class AudioControllerTest {
                 }))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("서버 오류가 발생했습니다: 예상치 못한 오류"));
+                .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"))
+                .andExpect(jsonPath("$.message").value("서버 오류"));
 
         verify(audioService).saveAudio(any(), any(User.class));
     }
@@ -163,7 +171,7 @@ class AudioControllerTest {
                     return request;
                 }))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().is5xxServerError());
 
         verify(audioService, never()).saveAudio(any(), any(User.class));
     }

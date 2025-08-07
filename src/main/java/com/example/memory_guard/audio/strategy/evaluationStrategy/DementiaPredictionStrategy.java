@@ -1,16 +1,17 @@
 package com.example.memory_guard.audio.strategy.evaluationStrategy;
 
-import com.example.memory_guard.audio.strategy.evaluationStrategy.dto.DementiaEvaluationResult;
-import com.example.memory_guard.audio.strategy.evaluationStrategy.dto.EvaluationResult;
+import com.example.memory_guard.audio.domain.feedback.AbstractEvaluationFeedback;
+import com.example.memory_guard.audio.domain.feedback.DementiaFeedback;
 import com.example.memory_guard.user.domain.User;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
+import java.io.IOException;
 
 @Component
 public class DementiaPredictionStrategy implements AudioEvaluationStrategy{
@@ -23,18 +24,15 @@ public class DementiaPredictionStrategy implements AudioEvaluationStrategy{
   }
 
   @Override
-  public EvaluationResult evaluate(String filePath, User user) {
-    Path path = Paths.get(filePath);
-    FileSystemResource fileResource = new FileSystemResource(path);
+  public AbstractEvaluationFeedback evaluate(File audioFile, User user) {
 
-    DementiaEvaluationResult result = webClient.post()
+    return webClient.post()
         .uri("요청경로")
         .contentType(MediaType.parseMediaType("audio/wav"))
-        .body(BodyInserters.fromResource(fileResource))
+        .body(BodyInserters.fromResource(new FileSystemResource(audioFile)))
         .retrieve()
-        .bodyToMono(DementiaEvaluationResult.class)
+        .bodyToMono(DementiaFeedback.class)
         .block();
 
-    return new DementiaEvaluationResult();
   }
 }

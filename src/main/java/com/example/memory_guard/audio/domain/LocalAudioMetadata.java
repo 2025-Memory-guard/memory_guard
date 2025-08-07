@@ -7,6 +7,9 @@ import jakarta.persistence.Entity;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.io.File;
+import java.io.IOException;
+
 @Getter
 @Entity
 @DiscriminatorValue("LOCAL")
@@ -16,8 +19,14 @@ public class LocalAudioMetadata extends AbstractAudioMetadata {
   private String filePath;
 
   @Override
-  public String getAccessUri() {
-    return this.filePath;
+  public File getFile() throws IOException {
+    File audioFile = new File(filePath);
+
+    if (!audioFile.exists()) {
+      throw new IOException("파일을 찾을 수 없습니다: " + filePath);
+    }
+
+    return audioFile;
   }
 
   @Builder
