@@ -1,6 +1,7 @@
 package com.example.memory_guard.user.domain;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
+import com.example.memory_guard.diary.domain.Diary;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -45,6 +46,9 @@ public class User implements UserDetails {
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<AbstractAudioMetadata> audioMetadataList = new ArrayList<>();
+
+  @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Diary> diaries = new ArrayList<>();
 
   @Builder
   public User(UserProfile userProfile) {
