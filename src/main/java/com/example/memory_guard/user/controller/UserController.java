@@ -28,22 +28,14 @@ public class UserController {
 
   @PostMapping("/ward/signup")
   public ResponseEntity<String> signup(@RequestBody SignupRequestDto signupDto) {
-    try {
       userService.signup(signupDto);
       return ResponseEntity.ok("회원가입이 완료되었습니다.");
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(e.getMessage());
-    }
   }
 
   @PostMapping("/guard/signup")
   public ResponseEntity<String> guardSignup(@RequestBody GuardSignupRequestDto signupDto) {
-    try {
       userService.guardSignup(signupDto);
       return ResponseEntity.ok("보호자 회원가입이 완료되었습니다.");
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResponseEntity.badRequest().body(e.getMessage());
-    }
   }
 
   @PostMapping("/user/login")
@@ -85,7 +77,6 @@ public class UserController {
       LoginResponseDto newAccessToken = userService.reissueAccessToken(refreshToken);
       return ResponseEntity.ok(newAccessToken);
     } catch (IllegalArgumentException e) {
-      log.warn("Invalid refresh token: {}", e.getMessage());
       ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
           .maxAge(0)
           .path("/")

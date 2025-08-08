@@ -1,22 +1,22 @@
 package com.example.memory_guard.user.domain;
 
+import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
 @Getter
+@Setter  // 테스트를 위해 임시 설정
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,11 @@ public class User {
   @Embedded
   private UserProfile userProfile;
 
-  @ManyToMany(fetch = FetchType.LAZY)
+  private int consecutiveRecordingDays = 0;
+
+  private LocalDate lastRecordingDate;
+
+  @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_roles",
       joinColumns = @JoinColumn(name = "user_id"),
@@ -38,6 +42,9 @@ public class User {
 
   @OneToOne(mappedBy = "ward", cascade = CascadeType.PERSIST, orphanRemoval = true)
   private GuardUserLink guardian;
+
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<AbstractAudioMetadata> audioMetadataList = new ArrayList<>();
 
   @Builder
   public User(UserProfile userProfile) {
@@ -66,5 +73,42 @@ public class User {
 
   public User getGuardian(){
     return this.guardian != null ? guardian.getGuardian() : null;
+  }
+
+  public void updateRecordingStreak() {
+    LocalDate today = LocalDate.now();
+
+    if (today.equals(this.lastRecordingDate)) {
+      return;
+    }
+
+    if (today.minusDays(1).equals(this.lastRecordingDate)) {
+      this.consecutiveRecordingDays++;
+    } else {
+      this.consecutiveRecordingDays = 1;
+    }
+
+    this.lastRecordingDate = today;
+  }
+
+  public void addAudioMetadata(AbstractAudioMetadata audioMetadata) {
+    this.audioMetadataList.add(audioMetadata);
+  }
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return this.roles.stream()
+        .map(role -> new SimpleGrantedAuthority(role.getName()))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public String getPassword() {
+    return this.userProfile.getPassword();
+  }
+
+  @Override
+  public String getUsername() {
+    return this.userProfile.getUserId();
   }
 }

@@ -35,8 +35,8 @@ public class SecurityConfig {
 //       JWT 인증처리 비활성화
 //        .authorizeHttpRequests(auth -> auth
 //            .requestMatchers("/", "/user/login", "/guard/login", "/token/reissue").permitAll()
-//            .requestMatchers("/home/user/**").hasRole("USER")
-//            .requestMatchers("/home/guard/**").hasRole("GUARD")
+//            .requestMatchers("/api/ward/**").hasRole("USER")
+//            .requestMatchers("/api/guard/**").hasRole("GUARD")
 //            .anyRequest().authenticated()
 //        )
         .authorizeHttpRequests(auth -> auth

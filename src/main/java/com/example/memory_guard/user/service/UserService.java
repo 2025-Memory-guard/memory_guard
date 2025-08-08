@@ -1,5 +1,7 @@
 package com.example.memory_guard.user.service;
 
+import com.example.memory_guard.global.exception.custom.AuthenticationException;
+import com.example.memory_guard.global.exception.custom.InvalidRequestException;
 import com.example.memory_guard.user.domain.UserProfile;
 import com.example.memory_guard.user.dto.LoginResponseDto;
 import com.example.memory_guard.user.dto.SignupRequestDto;
@@ -94,23 +96,23 @@ public class UserService {
 
   private User isExistUser(String userId, String password) {
     User user = userRepository.findByUserProfileUserId(userId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자 ID입니다."));
+        .orElseThrow(() -> new AuthenticationException("존재하지 않는 사용자 ID입니다."));
 
     if (!passwordEncoder.matches(password, user.getUserProfile().getPassword())) {
-      throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+      throw new AuthenticationException("비밀번호가 일치하지 않습니다.");
     }
     return user;
   }
 
   private User isValidWardUser(GuardSignupRequestDto signupRequest) {
     User ward = userRepository.findByUserProfileUserId(signupRequest.getWardUserId())
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 피보호자입니다."));
+        .orElseThrow(() -> new InvalidRequestException("존재하지 않는 피보호자입니다."));
 
     boolean hasUserRole = ward.getRoles().stream()
         .anyMatch(role -> "ROLE_USER".equals(role.getName()));
 
     if (!hasUserRole) {
-      throw new IllegalArgumentException("해당 사용자는 피보호자 권한이 없습니다.");
+      throw new InvalidRequestException("해당 사용자는 피보호자 권한이 없습니다.");
     }
     return ward;
   }
@@ -141,11 +143,11 @@ public class UserService {
 
   private void isDupUser(SignupRequestDto signupRequest) {
     if (userRepository.findByUserProfileUserId(signupRequest.getUserId()).isPresent()) {
-      throw new IllegalArgumentException("이미 존재하는 사용자 ID입니다.");
+      throw new InvalidRequestException("이미 존재하는 사용자 ID입니다.");
     }
 
     if (userRepository.existsByUserProfileUsername(signupRequest.getUsername())) {
-      throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+      throw new InvalidRequestException("이미 존재하는 사용자명입니다.");
     }
   }
 }

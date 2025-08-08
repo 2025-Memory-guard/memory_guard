@@ -3,14 +3,30 @@ package com.example.memory_guard.entity;
 import com.example.memory_guard.user.domain.Role;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.domain.UserProfile;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.Set; // List -> Set
 
 import static org.assertj.core.api.Assertions.*;
 
 class UserTest {
+
+    private User testUser;
+
+    @BeforeEach
+    void setup() {
+        UserProfile userProfile = UserProfile.builder()
+            .userId("testUser")
+            .username("테스트사용자")
+            .password("password")
+            .build();
+        testUser = User.builder()
+            .userProfile(userProfile)
+            .build();
+    }
 
     @Test
     @DisplayName("User 빌더 패턴과 addRole 메서드로 생성 테스트")
@@ -197,5 +213,47 @@ class UserTest {
 
         assertThat(ward.getGuardian()).isNotNull();
         assertThat(ward.getGuardian()).isEqualTo(guardian);
+    }
+
+    @Test
+    @DisplayName("성공: 첫 녹음 시 연속 녹음 일수는 1이 되고 마지막 녹음 날짜는 오늘로 설정된다")
+    void updateRecordingStreak_FirstTime() {
+        testUser.updateRecordingStreak();
+
+        assertThat(testUser.getConsecutiveRecordingDays()).isEqualTo(1);
+        assertThat(testUser.getLastRecordingDate()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    @DisplayName("성공: 어제 녹음 후 오늘 또 녹음하면 연속 녹음 일수가 1 증가한다")
+    void updateRecordingStreak_ConsecutiveDays() {
+         testUser.setLastRecordingDate(LocalDate.now().minusDays(1));
+         testUser.setConsecutiveRecordingDays(5);
+
+         testUser.updateRecordingStreak();
+         assertThat(testUser.getConsecutiveRecordingDays()).isEqualTo(6);
+    }
+
+    @Test
+    @DisplayName("성공: 며칠 전 녹음 후 오늘 녹음하면 연속 녹음 일수가 1로 초기화된다")
+    void updateRecordingStreak_ResetStreak() {
+         testUser.setLastRecordingDate(LocalDate.now().minusDays(3));
+         testUser.setConsecutiveRecordingDays(5);
+
+         testUser.updateRecordingStreak();
+
+         assertThat(testUser.getConsecutiveRecordingDays()).isEqualTo(1);
+         assertThat(testUser.getLastRecordingDate()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    @DisplayName("성공: 오늘 여러 번 녹음해도 연속 녹음 일수는 변하지 않는다")
+    void updateRecordingStreak_MultipleTimesInOneDay() {
+        testUser.updateRecordingStreak();
+        testUser.updateRecordingStreak();
+        testUser.updateRecordingStreak();
+
+        assertThat(testUser.getConsecutiveRecordingDays()).isEqualTo(1);
+        assertThat(testUser.getLastRecordingDate()).isEqualTo(LocalDate.now());
     }
 }

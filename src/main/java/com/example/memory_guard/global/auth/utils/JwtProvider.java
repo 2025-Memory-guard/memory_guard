@@ -1,5 +1,6 @@
 package com.example.memory_guard.global.auth.utils;
 import com.example.memory_guard.global.auth.dto.TokenDto;
+import com.example.memory_guard.user.domain.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -8,14 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -26,10 +24,12 @@ public class JwtProvider {
   private final Key key;
   private final long accessTokenExpirationMillis;
   private final long refreshTokenExpirationMillis;
+  private final UserRepository userRepository;
 
   public JwtProvider(@Value("${jwt.secret}") String secretKey,
                      @Value("${jwt.access-token-expiration-millis}") long accessToken,
-                     @Value("${jwt.refresh-token-expiration-millis}") long refreshToken) {
+                     @Value("${jwt.refresh-token-expiration-millis}") long refreshToken, UserRepository userRepository) {
+    this.userRepository = userRepository;
     byte[] keyBytes = Decoders.BASE64.decode(secretKey);
     this.key = Keys.hmacShaKeyFor(keyBytes);
     this.accessTokenExpirationMillis = accessToken;
@@ -81,6 +81,7 @@ public class JwtProvider {
   }
 
 
+  /// // 여기가 문제 나의 User객체를 UserDetail로 구현하면 해결가능
   public Authentication getAuthentication(String accessToken) {
     Claims claims = parseClaims(accessToken);
 
@@ -88,13 +89,12 @@ public class JwtProvider {
       throw new RuntimeException("권한 정보가 없는 토큰입니다.");
     }
 
-    Collection<? extends GrantedAuthority> authorities =
-        Arrays.stream(claims.get("auth").toString().split(","))
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
+    String userId = claims.getSubject();
 
-    UserDetails principal = new User(claims.getSubject(), "", authorities);
-    return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+    UserDetails principal = userRepository.findByUserProfileUserId(userId)
+        .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+
+    return new UsernamePasswordAuthenticationToken(principal, "", principal.getAuthorities());
   }
 
   public boolean validateToken(String token) {
