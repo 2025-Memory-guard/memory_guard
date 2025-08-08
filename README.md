@@ -1,3 +1,6 @@
+## DB ERD**
+https://www.erdcloud.com/d/SJiLvMtFndTPs4hyX
+
 ## **Memory Guard API 명세서**
 
 #### ** 피보호자(사용자) 회원가입**
