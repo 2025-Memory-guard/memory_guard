@@ -4,14 +4,17 @@ import com.example.memory_guard.user.domain.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.File;
 import java.io.IOException;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorValue("LOCAL")
 public class LocalAudioMetadata extends AbstractAudioMetadata {
 

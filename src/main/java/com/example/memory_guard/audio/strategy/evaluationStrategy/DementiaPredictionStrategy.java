@@ -6,12 +6,10 @@ import com.example.memory_guard.user.domain.User;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.File;
-import java.io.IOException;
 
 @Component
 public class DementiaPredictionStrategy implements AudioEvaluationStrategy{
@@ -19,7 +17,7 @@ public class DementiaPredictionStrategy implements AudioEvaluationStrategy{
   private final WebClient webClient;
   private final String apiUrl = "http://aimodle...";
 
-  public DementiaPredictionStrategy(WebClient webClient) {
+  public DementiaPredictionStrategy() {
     this.webClient = WebClient.builder().baseUrl(apiUrl).build();
   }
 

@@ -1,6 +1,7 @@
 package com.example.memory_guard.service;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
+import com.example.memory_guard.audio.repository.AudioMetadataRepository;
 import com.example.memory_guard.audio.service.AudioService;
 import com.example.memory_guard.audio.strategy.saveStrategy.AudioSaveStrategy;
 import com.example.memory_guard.user.domain.User;
@@ -36,6 +37,9 @@ class AudioServiceTest {
     @Mock
     private AbstractAudioMetadata mockAudioMetadata;
 
+    @Mock
+    private AudioMetadataRepository audioMetadataRepository;
+
     private User testUser;
 
     @BeforeEach
@@ -57,10 +61,14 @@ class AudioServiceTest {
         when(audioSaveStrategy.save(eq(mockMultipartFile), eq(testUser)))
             .thenReturn(mockAudioMetadata);
 
+        when(audioMetadataRepository.save(any(AbstractAudioMetadata.class)))
+            .thenReturn(mockAudioMetadata);
+
         AbstractAudioMetadata result = audioService.saveAudio(mockMultipartFile, testUser);
 
         assertThat(result).isEqualTo(mockAudioMetadata);
         verify(audioSaveStrategy).save(mockMultipartFile, testUser);
+        verify(audioMetadataRepository).save(mockAudioMetadata);
     }
 
     @Test
@@ -78,9 +86,12 @@ class AudioServiceTest {
     }
 
     @Test
-    @DisplayName("성공: null이 아닌 매개변수로 오디오 저장")
+    @DisplayName("성공: null이 아닌 매개변수로 오디오 저장") // 존재하지않은 audioMetadataRepository.save(metadata); 호출함
     void saveAudio_WithValidParameters() throws IOException {
         when(audioSaveStrategy.save(eq(mockMultipartFile), eq(testUser)))
+            .thenReturn(mockAudioMetadata);
+
+        when(audioMetadataRepository.save(any(AbstractAudioMetadata.class)))
             .thenReturn(mockAudioMetadata);
 
         AbstractAudioMetadata result = audioService.saveAudio(mockMultipartFile, testUser);
@@ -88,6 +99,7 @@ class AudioServiceTest {
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(mockAudioMetadata);
         verify(audioSaveStrategy).save(mockMultipartFile, testUser);
+        verify(audioMetadataRepository).save(mockAudioMetadata);
     }
 
     @Test
