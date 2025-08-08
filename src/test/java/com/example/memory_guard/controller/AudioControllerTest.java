@@ -95,8 +95,7 @@ class AudioControllerTest {
     @Test
     @DisplayName("성공: 오디오 파일 업로드 및 평가")
     void audioEvaluation_Success() throws Exception {
-        when(audioService.saveAudio(any(), any(User.class)))
-            .thenReturn(mockAudioMetadata);
+        doNothing().when(audioService).processNewAudio(any(), any(User.class));
 
         mockMvc.perform(multipart("/api/ward/audio/evaluation")
                 .file(mockAudioFile)
@@ -108,7 +107,7 @@ class AudioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("오디오 파일이 성공적으로 저장되었습니다."));
 
-        verify(audioService).saveAudio(any(), any(User.class));
+        verify(audioService).processNewAudio(any(), any(User.class));
     }
 
     @Test
@@ -132,14 +131,14 @@ class AudioControllerTest {
                 .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
                 .andExpect(jsonPath("$.message").value("오디오 파일이 비어있습니다."));
 
-        verify(audioService, never()).saveAudio(any(), any(User.class));
+        verify(audioService, never()).processNewAudio(any(), any(User.class));
     }
 
     @Test
     @DisplayName("실패: 오디오 저장 중 IOException 발생")
     void audioEvaluation_IOException() throws Exception {
-        when(audioService.saveAudio(any(), any(User.class)))
-            .thenThrow(new IOException("파일 저장 실패"));
+        doThrow(new IOException("파일 저장 실패"))
+            .when(audioService).processNewAudio(any(), any(User.class));
 
         mockMvc.perform(multipart("/api/ward/audio/evaluation")
                 .file(mockAudioFile)
@@ -151,14 +150,14 @@ class AudioControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code").value("FILE_IO_ERROR"));
 
-        verify(audioService).saveAudio(any(), any(User.class));
+        verify(audioService).processNewAudio(any(), any(User.class));
     }
 
     @Test
     @DisplayName("실패: 오디오 저장 중 일반 예외 발생")
     void audioEvaluation_GeneralException() throws Exception {
-        when(audioService.saveAudio(any(), any(User.class)))
-            .thenThrow(new RuntimeException("예상치 못한 오류"));
+        doThrow(new RuntimeException("예상치 못한 오류"))
+            .when(audioService).processNewAudio(any(), any(User.class));
 
         mockMvc.perform(multipart("/api/ward/audio/evaluation")
                 .file(mockAudioFile)
@@ -171,7 +170,7 @@ class AudioControllerTest {
                 .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"))
                 .andExpect(jsonPath("$.message").value("서버 오류"));
 
-        verify(audioService).saveAudio(any(), any(User.class));
+        verify(audioService).processNewAudio(any(), any(User.class));
     }
 
     @Test
@@ -185,7 +184,7 @@ class AudioControllerTest {
                 .andDo(print())
                 .andExpect(status().is5xxServerError());
 
-        verify(audioService, never()).saveAudio(any(), any(User.class));
+        verify(audioService, never()).processNewAudio(any(), any(User.class));
     }
 
     @Test
@@ -198,8 +197,7 @@ class AudioControllerTest {
             "test mp3 content".getBytes()
         );
 
-        when(audioService.saveAudio(any(), any(User.class)))
-            .thenReturn(mockAudioMetadata);
+        doNothing().when(audioService).processNewAudio(any(), any(User.class));
 
         mockMvc.perform(multipart("/api/ward/audio/evaluation")
                 .file(mp3File)
@@ -211,7 +209,7 @@ class AudioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("오디오 파일이 성공적으로 저장되었습니다."));
 
-        verify(audioService).saveAudio(any(), any(User.class));
+        verify(audioService).processNewAudio(any(), any(User.class));
     }
 
     @Test
@@ -225,8 +223,7 @@ class AudioControllerTest {
             largeContent
         );
 
-        when(audioService.saveAudio(any(), any(User.class)))
-            .thenReturn(mockAudioMetadata);
+        doNothing().when(audioService).processNewAudio(any(), any(User.class));
 
         mockMvc.perform(multipart("/api/ward/audio/evaluation")
                 .file(largeFile)
@@ -238,13 +235,12 @@ class AudioControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("오디오 파일이 성공적으로 저장되었습니다."));
 
-        verify(audioService).saveAudio(any(), any(User.class));
+        verify(audioService).processNewAudio(any(), any(User.class));
     }
 
   @Test
   @DisplayName("성공: 오디오 ID로 오디오 파일과 일기를 함께 조회한다")
   void playAudio_Success() throws Exception {
-    // given
     Long audioId = 1L;
 
     File tempFile = Files.createTempFile("test-audio", ".wav").toFile();
@@ -260,14 +256,14 @@ class AudioControllerTest {
     when(mockDiary.getCreatedAt()).thenReturn(LocalDateTime.now());
 
     when(audioService.getFile(audioId)).thenReturn(tempFile);
-    when(diaryService.getDairyByAudioId(audioId)).thenReturn(mockDiary);
+    when(audioService.getDairyByAudioId(audioId)).thenReturn(mockDiary);
 
     mockMvc.perform(get("/api/ward/audio/play/{audioId}", audioId))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.MULTIPART_FORM_DATA));
 
     verify(audioService, times(1)).getFile(audioId);
-    verify(diaryService, times(1)).getDairyByAudioId(audioId);
+    verify(audioService, times(1)).getDairyByAudioId(audioId);
   }
 
   @Test

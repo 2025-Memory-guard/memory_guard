@@ -21,10 +21,6 @@ public abstract class AbstractEvaluationFeedback {
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
-
-  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "audio_metadata_id", nullable = false)
   private AbstractAudioMetadata audioMetadata;
 
@@ -37,8 +33,7 @@ public abstract class AbstractEvaluationFeedback {
   private LocalDateTime createdAt;
 
 
-  public AbstractEvaluationFeedback(User user, AbstractAudioMetadata audioMetadata, FeedbackType feedbackType) {
-    this.user = user;
+  public AbstractEvaluationFeedback(AbstractAudioMetadata audioMetadata, FeedbackType feedbackType) {
     this.audioMetadata = audioMetadata;
     this.feedbackType = feedbackType;
   }

@@ -29,7 +29,8 @@ public class AudioEvaluationService {
       // AbstractEvaluationFeedback feedback = strategy.evaluate(audioFile, user);
       // feedbacks.add(feedback);
     }
-    // feedbackRepository.saveAll(feedbacks);
+
+    feedbackRepository.saveAll(feedbacks);
     return feedbacks;
   }
 }
