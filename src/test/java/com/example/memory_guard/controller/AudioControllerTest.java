@@ -5,6 +5,8 @@ import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.domain.LocalAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
 import com.example.memory_guard.audio.service.AudioService;
+import com.example.memory_guard.diary.domain.Diary;
+import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.global.exception.GlobalExceptionHandler;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.domain.UserProfile;
@@ -14,17 +16,23 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -33,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = {AudioController.class, GlobalExceptionHandler.class}, 
     excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@MockBean(JpaMetamodelMappingContext.class)
 @ActiveProfiles("test")
 class AudioControllerTest {
 
@@ -41,6 +50,9 @@ class AudioControllerTest {
 
     @MockitoBean
     private AudioService audioService;
+
+    @MockitoBean
+    private DiaryService diaryService;
 
     @MockitoBean
     private AudioMetadataRepository audioMetadataRepository;
@@ -228,4 +240,44 @@ class AudioControllerTest {
 
         verify(audioService).saveAudio(any(), any(User.class));
     }
+
+  @Test
+  @DisplayName("성공: 오디오 ID로 오디오 파일과 일기를 함께 조회한다")
+  void playAudio_Success() throws Exception {
+    // given
+    Long audioId = 1L;
+
+    File tempFile = Files.createTempFile("test-audio", ".wav").toFile();
+    tempFile.deleteOnExit();
+
+    UserProfile userProfile = UserProfile.builder().userId("testUser").username("테스트사용자").build();
+    User author = User.builder().userProfile(userProfile).build();
+
+    Diary mockDiary = mock(Diary.class);
+    when(mockDiary.getTitle()).thenReturn("테스트 일기");
+    when(mockDiary.getBody()).thenReturn("이것은 테스트 내용입니다.");
+    when(mockDiary.getAuthor()).thenReturn(author);
+    when(mockDiary.getCreatedAt()).thenReturn(LocalDateTime.now());
+
+    when(audioService.getFile(audioId)).thenReturn(tempFile);
+    when(diaryService.getDairyByAudioId(audioId)).thenReturn(mockDiary);
+
+    mockMvc.perform(get("/api/ward/audio/play/{audioId}", audioId))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.MULTIPART_FORM_DATA));
+
+    verify(audioService, times(1)).getFile(audioId);
+    verify(diaryService, times(1)).getDairyByAudioId(audioId);
+  }
+
+  @Test
+  @DisplayName("실패: 존재하지 않는 오디오 ID로 조회 시 404 Not Found")
+  void playAudio_Failure_NotFound() throws Exception {
+    Long nonExistentAudioId = 999L;
+    when(audioService.getFile(nonExistentAudioId)).thenThrow(new IOException("파일을 찾을 수 없습니다."));
+
+    mockMvc.perform(get("/api/ward/audio/play/{audioId}", nonExistentAudioId))
+        .andExpect(status().isInternalServerError());
+  }
+
 }

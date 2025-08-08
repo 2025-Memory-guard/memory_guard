@@ -1,19 +1,28 @@
 package com.example.memory_guard.controller;
 
+import com.example.memory_guard.global.auth.dto.TokenDto;
+import com.example.memory_guard.global.exception.custom.AuthenticationException;
 import com.example.memory_guard.user.controller.UserController;
 import com.example.memory_guard.user.dto.GuardSignupRequestDto;
+import com.example.memory_guard.user.dto.LoginRequestDto;
+import com.example.memory_guard.user.dto.LoginResponseDto;
 import com.example.memory_guard.user.dto.SignupRequestDto;
 import com.example.memory_guard.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -23,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = UserController.class, 
     excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@MockBean(JpaMetamodelMappingContext.class)
 @ActiveProfiles("test")
 class UserControllerTest {
 
@@ -221,5 +231,82 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("성공: 정상적인 로그인 요청")
+    void login_Success() throws Exception {
+        LoginRequestDto loginRequest = new LoginRequestDto();
+        loginRequest.setUserId("testUser");
+        loginRequest.setPassword("password");
+
+        TokenDto tokenDto = TokenDto.builder()
+            .grantType("Bearer")
+            .accessToken("access.token")
+            .refreshToken("refresh.token")
+            .build();
+
+        when(userService.login("testUser", "password")).thenReturn(tokenDto);
+        when(userService.getUserRoles("testUser")).thenReturn(List.of("ROLE_USER"));
+
+        mockMvc.perform(post("/user/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.grantType").value("Bearer"))
+            .andExpect(jsonPath("$.accessToken").value("access.token"))
+            .andExpect(jsonPath("$.userId").value("testUser"))
+            .andExpect(cookie().httpOnly("refreshToken", true))
+            .andExpect(cookie().value("refreshToken", "refresh.token"));
+    }
+
+    @Test
+    @DisplayName("실패: 잘못된 자격증명으로 로그인 요청 시 401 Unauthorized")
+    void login_Failure_InvalidCredentials() throws Exception {
+        LoginRequestDto loginRequest = new LoginRequestDto();
+        loginRequest.setUserId("testUser");
+        loginRequest.setPassword("wrongPassword");
+
+        when(userService.login(anyString(), anyString()))
+            .thenThrow(new AuthenticationException("비밀번호가 일치하지 않습니다."));
+
+        mockMvc.perform(post("/user/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("성공: 유효한 리프레시 토큰으로 토큰 재발급")
+    void reissue_Success() throws Exception {
+        LoginResponseDto responseDto = LoginResponseDto.builder()
+            .grantType("Bearer").accessToken("new.access.token").build();
+        when(userService.reissueAccessToken("valid.refresh.token")).thenReturn(responseDto);
+
+        mockMvc.perform(post("/token/reissue")
+                .cookie(new Cookie("refreshToken", "valid.refresh.token")))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.accessToken").value("new.access.token"));
+    }
+
+    @Test
+    @DisplayName("실패: 리프레시 토큰 없이 재발급 요청 시 401 Unauthorized")
+    void reissue_Failure_NoToken() throws Exception {
+        mockMvc.perform(post("/token/reissue"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$").value("Refresh Token이 없습니다."));
+    }
+
+    @Test
+    @DisplayName("실패: 유효하지 않은 리프레시 토큰으로 재발급 요청 시 401 Unauthorized 및 쿠키 삭제")
+    void reissue_Failure_InvalidToken() throws Exception {
+        when(userService.reissueAccessToken("invalid.token"))
+            .thenThrow(new IllegalArgumentException("유효하지 않거나 만료된 Refresh Token 입니다."));
+
+        mockMvc.perform(post("/token/reissue")
+                .cookie(new Cookie("refreshToken", "invalid.token")))
+            .andExpect(status().isUnauthorized())
+            .andExpect(cookie().maxAge("refreshToken", 0))
+            .andExpect(jsonPath("$").value("유효하지 않은 Refresh Token 입니다. 다시 로그인해주세요."));
     }
 }
