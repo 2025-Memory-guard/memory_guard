@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/questions")
+@RequestMapping("/api/ward/audio")
 public class QuestionController {
 
   private final GeminiService geminiService;
@@ -19,7 +19,7 @@ public class QuestionController {
     this.geminiService = geminiService;
   }
 
-  @GetMapping("/today")
+  @GetMapping("/question")
   public ResponseEntity<QuestionResponseDto> getTodaysQuestion() {
     String response = geminiService.generateQuestion();
 
