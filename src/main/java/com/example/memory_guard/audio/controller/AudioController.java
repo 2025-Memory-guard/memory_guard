@@ -2,6 +2,7 @@ package com.example.memory_guard.audio.controller;
 
 import com.example.memory_guard.audio.dto.AudioStampResponseDto;
 import com.example.memory_guard.audio.service.AudioService;
+import com.example.memory_guard.audio.utils.AudioUtils;
 import com.example.memory_guard.diary.domain.Diary;
 import com.example.memory_guard.diary.dto.DiaryResponseDto;
 import com.example.memory_guard.user.domain.User;
@@ -26,6 +27,7 @@ import java.io.IOException;
 public class AudioController {
 
   private final AudioService audioService;
+  private final int AUDIO_MIN_TIME_SECOND = 20;
 
   // 1. 음성저장  2. 음성평가 3. 음성일기
   @PostMapping("/evaluation")
@@ -33,9 +35,14 @@ public class AudioController {
       @RequestParam("audioFile") MultipartFile audioFile,
       @AuthenticationPrincipal User user) throws IOException {
 
-    if (audioFile.isEmpty()) {
-      throw new IllegalArgumentException("오디오 파일이 비어있습니다.");
+    if (audioFile.isEmpty()){
+      throw new IllegalArgumentException("오디오가 비어있어요.");
     }
+
+    // 테스트를 위해 꺼둠
+//    if (AudioUtils.getAudioSecondTime(audioFile) <= AUDIO_MIN_TIME_SECOND) {
+//      throw new IllegalArgumentException("오디오의 길이가 너무 짧아요. 분석을 위해 다시 녹음해주세요.");
+//    }
 
     audioService.processNewAudio(audioFile, user);
 

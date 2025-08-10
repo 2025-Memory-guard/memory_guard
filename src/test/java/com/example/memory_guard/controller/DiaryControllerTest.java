@@ -44,7 +44,7 @@ class DiaryControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper; // JSON 직렬화를 위해 ObjectMapper 주입
+    private ObjectMapper objectMapper;
 
     @MockBean
     private DiaryService diaryService;
@@ -95,18 +95,15 @@ class DiaryControllerTest {
 
         when(diaryService.getUserDiaries(testUser.getId())).thenReturn(mockDiaries);
 
-        // when & then
         mockMvc.perform(get("/api/ward/diarys"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            // jsonPath의 value() 메소드 사용
             .andExpect(jsonPath("$[0].title").value("첫 번째 일기"))
             .andExpect(jsonPath("$[0].body").value("오늘은 날씨가 좋았다."))
             .andExpect(jsonPath("$[1].title").value("두 번째 일기"))
             .andExpect(jsonPath("$[1].authorName").value("테스트사용자"));
 
-        // verify
         verify(diaryService, times(1)).getUserDiaries(testUser.getId());
     }
 

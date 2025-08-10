@@ -129,7 +129,7 @@ class AudioControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_ARGUMENT"))
-                .andExpect(jsonPath("$.message").value("오디오 파일이 비어있습니다."));
+                .andExpect(jsonPath("$.message").value("오디오가 비어있어요."));
 
         verify(audioService, never()).processNewAudio(any(), any(User.class));
     }
