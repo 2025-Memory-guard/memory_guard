@@ -76,7 +76,7 @@ public class AudioService {
 
     // 음성 저장
     AbstractAudioMetadata abstractAudioMetadata = audioStorageService.save(audioFile, persistentUser);
-    user.updateRecordingStreak();
+    persistentUser.updateRecordingStreak();
 
     // 음성평가
     List<AbstractEvaluationFeedback> audioFeedbacks = audioEvaluationService.evaluate(abstractAudioMetadata, persistentUser);
