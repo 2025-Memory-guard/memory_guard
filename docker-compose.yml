@@ -4,15 +4,12 @@ services:
   app:
     build: .
     container_name: memory-guard-app
-    depends_on:
-        db:
-            condition: service_healthy
     ports:
-      - "8080:8080"
+      - "80:8080"
     environment:
-      - spring.datasource.url=jdbc:mysql://db:3306/memory_guard?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
-      - spring.datasource.username=root
-      - spring.datasource.password=memoryguard
+      - spring.datasource.url=jdbc:mysql://database-1.czq448iqoqb7.ap-northeast-2.rds.amazonaws.com:3306/memory_guard?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
+      - spring.datasource.username=junyeong
+      - spring.datasource.password=86404592
 
       - spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
@@ -22,21 +19,3 @@ services:
       - jwt.refresh-token-expiration-millis=604800000
       - jwt.refresh-token-expiration-seconds=604800
     restart: always
-
-  db:
-    image: mysql:8.0
-    container_name: memory-guard-db
-    healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    environment:
-      - mysql.root.password=memoryguard
-      - mysql.database=memory_guard
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: always
-
-volumes:
-  db_data:
