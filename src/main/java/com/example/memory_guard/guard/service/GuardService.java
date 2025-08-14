@@ -2,6 +2,7 @@ package com.example.memory_guard.guard.service;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
+import com.example.memory_guard.guard.dto.GuardCalendarResponseDto;
 import com.example.memory_guard.guard.dto.GuardHomeResponseDto;
 import com.example.memory_guard.guard.dto.GuardReportResponseDto;
 import com.example.memory_guard.user.domain.User;
@@ -79,6 +80,35 @@ public class GuardService {
         return GuardReportResponseDto.builder()
                 .weeklyAttendanceCount(weeklyAttendanceCount)
                 .correctionCount(0)
+                .build();
+    }
+
+    public GuardCalendarResponseDto getCalendar(User user) {
+        checkUser(user);
+
+        User ward = user.getWard();
+
+        //이번 주 출석횟수 구하기
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfMonth = today.withDayOfMonth(1).atStartOfDay();
+        LocalDateTime endOfMonth = today.withDayOfMonth(today.lengthOfMonth()).atTime(LocalTime.MAX);
+
+        List<AbstractAudioMetadata> monthlyRecordings = audioMetadataRepository.findByUserAndCreatedAtBetween(ward, startOfMonth, endOfMonth);
+
+        long monthlyAttendanceCount = monthlyRecordings.stream()
+                .map(metadata -> metadata.getCreatedAt().toLocalDate())
+                .distinct()
+                .count();
+
+        List<LocalDate> monthlyAttendance = monthlyRecordings.stream()
+                .map(metadata -> metadata.getCreatedAt().toLocalDate())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        return GuardCalendarResponseDto.builder()
+                .monthlyAttendanceCount(monthlyAttendanceCount)
+                .monthlyAttendance(monthlyAttendance)
                 .build();
     }
 
