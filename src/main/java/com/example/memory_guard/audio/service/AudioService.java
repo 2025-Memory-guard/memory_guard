@@ -7,7 +7,7 @@ import com.example.memory_guard.audio.repository.AudioMetadataRepository;
 import com.example.memory_guard.diary.domain.Diary;
 import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.user.domain.User;
-import com.example.memory_guard.user.domain.repository.UserRepository;
+import com.example.memory_guard.user.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -38,11 +38,14 @@ public class User implements UserDetails {
   )
   private Set<Role> roles = new HashSet<>();
 
-  @OneToMany(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
-  private List<GuardUserLink> wards = new ArrayList<>();
+//  @OneToMany(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
+//  private List<GuardUserLink> wards = new ArrayList<>();
 
   @OneToOne(mappedBy = "ward", cascade = CascadeType.PERSIST, orphanRemoval = true)
-  private GuardUserLink guardian;
+  private User guardian;
+
+  @OneToOne(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
+  private User ward;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<AbstractAudioMetadata> audioMetadataList = new ArrayList<>();
@@ -60,19 +63,31 @@ public class User implements UserDetails {
   }
 
   public void addWard(User ward){
-    GuardUserLink guardUserLink = new GuardUserLink(this, ward);
-    this.wards.add(guardUserLink);
-    ward.setGuardian(guardUserLink);
+    //GuardUserLink guardUserLink = new GuardUserLink(this, ward);
+    //this.wards.add(guardUserLink);
+    this.ward = ward;
+    //ward.setGuardian(guardUserLink);
+    ward.setGuardian(this);
   }
 
-  public void setGuardian(GuardUserLink guardUserLink) {
-    this.guardian = guardUserLink;
+//  public void setGuardian(GuardUserLink guardUserLink) {
+//    this.guardian = guardUserLink;
+//  }
+
+  //수정필요
+  public void setGuardian(User user) {
+    this.guardian = user;
   }
 
+  //수정 필요
   public List<User> getWards(){
-    return wards.stream()
-        .map(GuardUserLink::getWard)
-        .collect(Collectors.toList());
+//    return wards.stream()
+//        .map(GuardUserLink::getWard)
+//        .collect(Collectors.toList());
+
+    List<User> wardList = new ArrayList<>();
+    wardList.add(ward);
+    return wardList;
   }
 
   public User getGuardian(){
