@@ -1,6 +1,7 @@
 package com.example.memory_guard.guard.controller;
 
 import com.example.memory_guard.guard.dto.GuardHomeResponseDto;
+import com.example.memory_guard.guard.dto.GuardReportResponseDto;
 import com.example.memory_guard.guard.service.GuardService;
 import com.example.memory_guard.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,18 @@ public class GuardController {
             @AuthenticationPrincipal User user
     ) {
         return ResponseEntity.ok(guardService.getHomeData(user));
+    }
+
+    public ResponseEntity<GuardReportResponseDto> getReport(
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(guardService.getReport(user));
+    }
+
+    public ResponseEntity<GuardCalendarResponseDto> getCalendar(
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(guardService.getCalendar(user));
     }
 
 }
