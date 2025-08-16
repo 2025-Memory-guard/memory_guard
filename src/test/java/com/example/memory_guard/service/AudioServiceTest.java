@@ -1,15 +1,17 @@
 package com.example.memory_guard.service;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
-import com.example.memory_guard.audio.dto.AudioStampResponseDto;
+import com.example.memory_guard.audio.dto.response.AudioStampResponseDto;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
-import com.example.memory_guard.audio.service.AudioEvaluationService;
+import com.example.memory_guard.analysis.service.AudioAnalysisService;
 import com.example.memory_guard.audio.service.AudioService;
 import com.example.memory_guard.audio.service.AudioStorageService;
 import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.domain.UserProfile;
-import com.example.memory_guard.user.repository.UserRepository;
+
+import com.example.memory_guard.user.domain.repository.UserRepository;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +42,7 @@ class AudioServiceTest {
     @Mock
     private AudioStorageService audioStorageService;
     @Mock
-    private AudioEvaluationService audioEvaluationService;
+    private AudioAnalysisService audioEvaluationService;
     @Mock
     private DiaryService diaryService;
 
