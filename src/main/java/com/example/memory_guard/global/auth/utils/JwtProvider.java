@@ -1,6 +1,6 @@
 package com.example.memory_guard.global.auth.utils;
 import com.example.memory_guard.global.auth.dto.TokenDto;
-import com.example.memory_guard.user.domain.repository.UserRepository;
+import com.example.memory_guard.user.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

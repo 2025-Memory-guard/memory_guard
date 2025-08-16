@@ -9,7 +9,9 @@ import com.example.memory_guard.audio.service.AudioStorageService;
 import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.domain.UserProfile;
+
 import com.example.memory_guard.user.domain.repository.UserRepository;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
