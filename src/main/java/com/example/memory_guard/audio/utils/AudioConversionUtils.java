@@ -18,12 +18,9 @@ import java.nio.file.Paths;
 @Component
 public class AudioConversionUtils {
 
-    private static final String FFMPEG_PATH = "C:/ffmpeg/ffmpeg.exe";
-    private static final String FFPROBE_PATH = "C:/ffmpeg/ffprobe.exe";
-
     public File convertToWav(MultipartFile audioFile, String outputPath) throws IOException {
-        FFmpeg ffmpeg = new FFmpeg(FFMPEG_PATH);
-        FFprobe ffprobe = new FFprobe(FFPROBE_PATH);
+        FFmpeg ffmpeg = new FFmpeg();
+        FFprobe ffprobe = new FFprobe();
         FFmpegExecutor executor = new FFmpegExecutor(ffmpeg, ffprobe);
 
         // 임시 파일 생성
