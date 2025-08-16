@@ -1,37 +1,51 @@
 package com.example.memory_guard.diary.service;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
+import com.example.memory_guard.audio.domain.AudioTranscription;
+import com.example.memory_guard.audio.repository.AudioTranscriptionRepository;
+import com.example.memory_guard.global.ai.GeminiClient;
 import com.example.memory_guard.diary.domain.Diary;
+import com.example.memory_guard.diary.dto.DiaryContentDto;
 import com.example.memory_guard.diary.dto.DiaryResponseDto;
 import com.example.memory_guard.diary.repository.DiaryRepository;
 import com.example.memory_guard.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class DiaryService {
 
   private final DiaryRepository diaryRepository;
+  private final AudioTranscriptionRepository audioTranscriptionRepository;
+  private final GeminiClient geminiService;
 
   public Diary createAudioDiary(AbstractAudioMetadata abstractAudioMetadata, User user) throws IOException {
     Diary audioDiary = generateDiary(abstractAudioMetadata, user);
-
+    log.info("음성 일기가 생성되었습니다. {}", audioDiary);
     diaryRepository.save(audioDiary);
 
     return audioDiary;
   }
 
   public Diary generateDiary(AbstractAudioMetadata audioMetadata, User user) throws IOException {
-    File audioFile = audioMetadata.getFile();
-    // AI을 활용해서 음성파일을 일기로 변환
-    return new Diary("제목", "본문", user,  audioMetadata);
+    AudioTranscription transcription = audioTranscriptionRepository.findByAudioMetadataId(audioMetadata.getId())
+        .orElseThrow(() -> new IllegalStateException("해당 오디오에 대한 텍스트 변환 데이터를 찾을 수 없습니다: " + audioMetadata.getId()));
+
+    DiaryContentDto diaryContent = geminiService.summarizeTextToDiary(transcription.getText());
+
+    return Diary.builder()
+        .title(diaryContent.getTitle())
+        .body(diaryContent.getBody())
+        .author(user)
+        .audioMetadata(audioMetadata)
+        .build();
   }
 
   public Diary getDairyByAudioId(Long audioId) {

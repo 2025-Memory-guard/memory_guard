@@ -30,6 +30,10 @@ public class User implements UserDetails {
 
   private LocalDate lastRecordingDate;
 
+  private double avgRecordingTime = 0.0;
+
+  private double avgScore = 0.0;
+
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_roles",
@@ -97,6 +101,24 @@ public class User implements UserDetails {
 
   public void addAudioMetadata(AbstractAudioMetadata audioMetadata) {
     this.audioMetadataList.add(audioMetadata);
+  }
+
+  public void updateAvgRecordingTime(int newRecordingTimeSeconds) {
+    int totalRecordings = this.audioMetadataList.size();
+    if (totalRecordings == 0) {
+      this.avgRecordingTime = newRecordingTimeSeconds;
+    } else {
+      this.avgRecordingTime = ((this.avgRecordingTime * (totalRecordings - 1)) + newRecordingTimeSeconds) / totalRecordings;
+    }
+  }
+
+  public void updateAvgScore(double newScore) {
+    int totalEvaluations = this.audioMetadataList.size();
+    if (totalEvaluations == 0) {
+      this.avgScore = newScore;
+    } else {
+      this.avgScore = ((this.avgScore * (totalEvaluations - 1)) + newScore) / totalEvaluations;
+    }
   }
 
   @Override

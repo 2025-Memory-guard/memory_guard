@@ -4,8 +4,11 @@ import com.example.memory_guard.user.dto.LoginResponseDto;
 import com.example.memory_guard.user.dto.LoginRequestDto;
 import com.example.memory_guard.user.dto.SignupRequestDto;
 import com.example.memory_guard.user.dto.GuardSignupRequestDto;
+import com.example.memory_guard.user.dto.WardHomeResponseDto;
 import com.example.memory_guard.global.auth.dto.TokenDto;
 import com.example.memory_guard.user.service.UserService;
+import com.example.memory_guard.user.domain.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,6 +92,12 @@ public class UserController {
     }
   }
 
+  @GetMapping("/api/ward/home")
+  public ResponseEntity<WardHomeResponseDto> wardHome(@AuthenticationPrincipal User user) {
+    WardHomeResponseDto response = userService.getWardHomeData(user);
+    return ResponseEntity.ok(response);
+  }
+
   @GetMapping("/home/user")
   public String testUser(){
     return "User";
@@ -99,3 +108,6 @@ public class UserController {
     return "Guard";
   }
 }
+
+
+
