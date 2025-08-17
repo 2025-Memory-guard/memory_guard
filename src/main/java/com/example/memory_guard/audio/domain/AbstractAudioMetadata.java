@@ -1,10 +1,10 @@
   package com.example.memory_guard.audio.domain;
 
-  import com.example.memory_guard.analysis.domain.AbstractOverallAnalysis;
-  import com.example.memory_guard.analysis.domain.SentenceAnalysisIndicators;
+  import com.example.memory_guard.audio.domain.feedback.AbstractEvaluationFeedback;
   import com.example.memory_guard.user.domain.User;
   import jakarta.persistence.*;
   import lombok.AccessLevel;
+  import lombok.Builder;
   import lombok.Getter;
   import lombok.NoArgsConstructor;
   import org.springframework.data.annotation.CreatedDate;
@@ -43,10 +43,7 @@
     private Long duration;
 
     @OneToMany(mappedBy = "audioMetadata")
-    private List<AbstractOverallAnalysis> evaluationFeedbacks;
-
-    @OneToMany(mappedBy = "audioMetadata")
-    private List<SentenceAnalysisIndicators> sentenceAnalysisIndicators;
+    private List<AbstractEvaluationFeedback> evaluationFeedbacks;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)

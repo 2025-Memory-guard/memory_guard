@@ -1,10 +1,8 @@
-package com.example.memory_guard.diary.domain;
+package com.example.memory_guard.audio.domain.feedback;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.user.domain.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,33 +10,31 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@Getter
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Diary {
+public abstract class AbstractEvaluationFeedback {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String title;
-  private String body;
-
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id")
-  private User author;
-
-  @OneToOne
+  @JoinColumn(name = "audio_metadata_id", nullable = false)
   private AbstractAudioMetadata audioMetadata;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "feedback_type", nullable = false)
+  private FeedbackType feedbackType;
+
   @CreatedDate
+  @Column(name = "created_at", updatable = false)
   private LocalDateTime createdAt;
 
-  @Builder
-  public Diary(String title, String body, User author, AbstractAudioMetadata audioMetadata){
-    this.title = title;
-    this.body = body;
-    this.author = author;
+
+  public AbstractEvaluationFeedback(AbstractAudioMetadata audioMetadata, FeedbackType feedbackType) {
     this.audioMetadata = audioMetadata;
+    this.feedbackType = feedbackType;
   }
 }

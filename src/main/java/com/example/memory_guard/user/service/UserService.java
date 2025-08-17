@@ -6,11 +6,6 @@ import com.example.memory_guard.user.domain.UserProfile;
 import com.example.memory_guard.user.dto.LoginResponseDto;
 import com.example.memory_guard.user.dto.SignupRequestDto;
 import com.example.memory_guard.user.dto.GuardSignupRequestDto;
-import com.example.memory_guard.user.dto.WardHomeResponseDto;
-import com.example.memory_guard.diary.dto.DiaryAudioInfoDto;
-import com.example.memory_guard.audio.service.AudioService;
-import com.example.memory_guard.audio.dto.response.AudioStampResponseDto;
-import com.example.memory_guard.diary.domain.Diary;
 import com.example.memory_guard.global.auth.dto.TokenDto;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.domain.Role;
@@ -23,7 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
@@ -37,7 +31,6 @@ public class UserService {
   private final UserRepository userRepository;
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
-  private final AudioService audioService;
 
   public void signup(SignupRequestDto signupRequest) {
     isDupUser(signupRequest);
@@ -98,29 +91,6 @@ public class UserService {
     return LoginResponseDto.builder()
         .grantType("Bearer")
         .accessToken(newAccessToken)
-        .build();
-  }
-
-  @Transactional(readOnly = true)
-  public WardHomeResponseDto getWardHomeData(User user) {
-    AudioStampResponseDto audioStamps = audioService.getAudioStamps(user);
-
-    List<DiaryAudioInfoDto> diaryList = user.getDiaries().stream()
-        .map(this::convertToDiaryAudioInfoDto)
-        .collect(Collectors.toList());
-
-    return WardHomeResponseDto.builder()
-        .consecutiveRecordingDays(audioStamps.getConsecutiveRecordingDays())
-        .weeklyStamps(audioStamps.getWeeklyStamps())
-        .diaryList(diaryList)
-        .build();
-  }
-
-  private DiaryAudioInfoDto convertToDiaryAudioInfoDto(Diary diary) {
-    return DiaryAudioInfoDto.builder()
-        .audioId(diary.getAudioMetadata().getId())
-        .title(diary.getTitle())
-        .duration(diary.getAudioMetadata().getDuration())
         .build();
   }
 
