@@ -12,6 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DementiaAnalysis extends AbstractOverallAnalysis {
 
+  private double score;
+
+  private double dementiaProbability;
+
   private double speakingRate; // o
 
   private double utteranceVolume; // o
