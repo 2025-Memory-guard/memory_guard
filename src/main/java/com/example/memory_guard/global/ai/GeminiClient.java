@@ -129,11 +129,12 @@ public class GeminiClient {
         "(나쁜 예시)\n" +
         "- 안녕하세요! 질문을 하나 드릴게요. 학창 시절, 가장 친했던 친구는 누구인가요?";
 
-    GenerateContentResponse response =
-        client.models.generateContent(
-            "gemini-2.5-flash", prompt,null);
+    GenerateContentResponse response = client.models.generateContent("gemini-2.5-flash", prompt,null);
 
-    return response.text();
+    return response.text()
+        .replace("```json", "")
+        .replace("```", "")
+        .trim();
   }
 
   public String generateFinalFeedback(String sentenceAnalysisText) throws IOException {
@@ -159,6 +160,10 @@ public class GeminiClient {
         "\n--- 분석 결과 끝 ---";
 
     GenerateContentResponse response = client.models.generateContent("gemini-2.5-flash", prompt, null);
-    return response.text().trim();
+
+    return response.text()
+        .replace("```json", "")
+        .replace("```", "")
+        .trim();
   }
 }
