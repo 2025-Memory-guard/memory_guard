@@ -1,4 +1,4 @@
-package com.example.memory_guard.user.repository;
+package com.example.memory_guard.user.domain.repository;
 
 import com.example.memory_guard.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;

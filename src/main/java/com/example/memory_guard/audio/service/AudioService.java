@@ -20,7 +20,7 @@ import com.example.memory_guard.diary.domain.Diary;
 import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.global.ai.AiModelClient;
 import com.example.memory_guard.user.domain.User;
-import com.example.memory_guard.user.repository.UserRepository;
+import com.example.memory_guard.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

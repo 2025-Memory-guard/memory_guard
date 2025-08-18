@@ -9,8 +9,8 @@ import com.example.memory_guard.user.dto.SignupRequestDto;
 import com.example.memory_guard.user.domain.Role;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.domain.UserProfile;
-import com.example.memory_guard.user.repository.RoleRepository;
-import com.example.memory_guard.user.repository.UserRepository;
+import com.example.memory_guard.user.domain.repository.RoleRepository;
+import com.example.memory_guard.user.domain.repository.UserRepository;
 import com.example.memory_guard.user.service.UserService;
 import com.example.memory_guard.global.auth.utils.JwtProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
