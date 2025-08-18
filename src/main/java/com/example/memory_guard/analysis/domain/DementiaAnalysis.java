@@ -29,20 +29,22 @@ public class DementiaAnalysis extends AbstractOverallAnalysis {
   private double repetitionRatio;
 
   @Builder
-  public DementiaAnalysis(AbstractAudioMetadata audioMetadata,
+  public DementiaAnalysis(AbstractAudioMetadata audioMetadata, double score1,
                           double speakingRate,
                           double utteranceVolume,
                           double avgSilenceDuration,
                           double vocabularyAccuracy,
                           double fillerFrequency,
                           double repetitionRatio,
-                          double score){
+                          double score, double dementiaProbability){
     super(audioMetadata, FeedbackType.DEMENTIA, score);
+    this.score = score1;
     this.speakingRate = speakingRate;
     this.utteranceVolume = utteranceVolume;
     this.avgSilenceDuration = avgSilenceDuration;
     this.vocabularyAccuracy = vocabularyAccuracy;
     this.fillerFrequency = fillerFrequency;
     this.repetitionRatio = repetitionRatio;
+    this.dementiaProbability = dementiaProbability;
   }
 }
