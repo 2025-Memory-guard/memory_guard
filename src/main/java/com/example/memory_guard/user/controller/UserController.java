@@ -36,8 +36,8 @@ public class UserController {
   }
 
   @PostMapping("/guard/signup")
-  public ResponseEntity<String> guardSignup(@RequestBody GuardSignupRequestDto signupDto) {
-      userService.guardSignup(signupDto);
+  public ResponseEntity<String> guardSignup(@RequestBody SignupRequestDto signupDto) {
+      userService.signup(signupDto);
       return ResponseEntity.ok("보호자 회원가입이 완료되었습니다.");
   }
 

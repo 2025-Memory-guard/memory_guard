@@ -2,20 +2,21 @@ version: '3.8'
 
 services:
   app:
-    image: junan01/memory_guard:1.3
+    image: junan01/memory_guard:1.4
     container_name: memory-guard-app
     ports:
       - "80:8080"
     environment:
-      - spring.datasource.url=jdbc:mysql://database-1.czq448iqoqb7.ap-northeast-2.rds.amazonaws.com:3306/memory_guard?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true
-      - spring.datasource.username=junyeong
-      - spring.datasource.password=86404592
+      - SPRING_PROFILES_ACTIVE=prod
 
-      - spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+      - JWT_SECRET=${JWT_SECRET}
 
-      - spring.jpa.hibernate.ddl-auto=update
-      - jwt.secret=V29vYWNvdXJzZUhvbWV3b3JrU2VjcmV0S2V5Rm9ySldUU2FtcGxlMQ==
-      - jwt.access-token-expiration-millis=9000000
-      - jwt.refresh-token-expiration-millis=604800000
-      - jwt.refresh-token-expiration-seconds=604800
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+
+      - AI_API_KEY=${AI_API_KEY}
+      - AI_API_URL=${AI_API_URL}
+
+      - FILE_UPLOAD_DIR=${UPLOAD_DIR}
     restart: always
