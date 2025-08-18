@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,11 +28,17 @@ public class DiaryService {
   private final GeminiClient geminiService;
 
   public Diary createAudioDiary(AbstractAudioMetadata abstractAudioMetadata, User user) throws IOException {
-    Diary audioDiary = generateDiary(abstractAudioMetadata, user);
-    log.info("음성 일기가 생성되었습니다. {}", audioDiary);
-    diaryRepository.save(audioDiary);
 
-    return audioDiary;
+    Optional<Diary> existingDiary = diaryRepository.findByAudioMetadataId(abstractAudioMetadata.getId());
+
+    if (existingDiary.isPresent()) {
+      log.info("기존 음성 일기를 반환합니다. Diary ID: {}", existingDiary.get().getId());
+      return existingDiary.get();
+    }
+
+    Diary audioDiary = generateDiary(abstractAudioMetadata, user);
+    log.info("새로운 음성 일기가 생성되었습니다. Title: {}", audioDiary.getTitle());
+    return diaryRepository.save(audioDiary);
   }
 
   public Diary generateDiary(AbstractAudioMetadata audioMetadata, User user) throws IOException {
