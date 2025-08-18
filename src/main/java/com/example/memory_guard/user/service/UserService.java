@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,9 +104,12 @@ public class UserService {
 
   @Transactional(readOnly = true)
   public WardHomeResponseDto getWardHomeData(User user) {
-    AudioStampResponseDto audioStamps = audioService.getAudioStamps(user);
+    User persistentUser = userRepository.findById(user.getId())
+        .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + user.getId()));
 
-    List<DiaryAudioInfoDto> diaryList = user.getDiaries().stream()
+    AudioStampResponseDto audioStamps = audioService.getAudioStamps(persistentUser);
+
+    List<DiaryAudioInfoDto> diaryList = persistentUser.getDiaries().stream()
         .map(this::convertToDiaryAudioInfoDto)
         .collect(Collectors.toList());
 
