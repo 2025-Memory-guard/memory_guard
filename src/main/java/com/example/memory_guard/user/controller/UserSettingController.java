@@ -1,6 +1,7 @@
 package com.example.memory_guard.user.controller;
 
 import com.example.memory_guard.user.domain.User;
+import com.example.memory_guard.user.dto.GuardManagementResponseDto;
 import com.example.memory_guard.user.dto.GuardUserDto;
 import com.example.memory_guard.user.service.UserSettingService;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +30,9 @@ public class UserSettingController {
     }
 
     @GetMapping("/management")
-    public ResponseEntity<Ward>
+    public ResponseEntity<GuardManagementResponseDto> getManagement(
+            @AuthenticationPrincipal User ward
+    ) {
+        return ResponseEntity.ok(userSettingService.getManagement(ward));
+    }
 }
