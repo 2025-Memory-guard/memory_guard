@@ -1,10 +1,7 @@
 package com.example.memory_guard.user.controller;
 
-import com.example.memory_guard.user.dto.LoginResponseDto;
-import com.example.memory_guard.user.dto.LoginRequestDto;
-import com.example.memory_guard.user.dto.SignupRequestDto;
-import com.example.memory_guard.user.dto.GuardSignupRequestDto;
-import com.example.memory_guard.user.dto.WardHomeResponseDto;
+import com.example.memory_guard.setting.dto.WardSettingsDto;
+import com.example.memory_guard.user.dto.*;
 import com.example.memory_guard.global.auth.dto.TokenDto;
 import com.example.memory_guard.user.service.UserService;
 import com.example.memory_guard.user.domain.User;
@@ -96,6 +93,19 @@ public class UserController {
   public ResponseEntity<WardHomeResponseDto> wardHome(@AuthenticationPrincipal User user) {
     WardHomeResponseDto response = userService.getWardHomeData(user);
     return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/api/user/exists")
+  public ResponseEntity<UserSearchResponseDto> searchUser(@RequestParam("userId") String userId) {
+    return userService.searchUserByUserId(userId)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
+  }
+
+  @GetMapping("/api/ward/guard/setting")
+  public ResponseEntity<WardSettingsDto> getWardSettings(@AuthenticationPrincipal User ward) {
+    WardSettingsDto settingsData = userService.getWardSettingsData(ward);
+    return ResponseEntity.ok(settingsData);
   }
 
   @GetMapping("/home/user")

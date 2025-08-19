@@ -2,11 +2,12 @@ package com.example.memory_guard.user.service;
 
 import com.example.memory_guard.global.exception.custom.AuthenticationException;
 import com.example.memory_guard.global.exception.custom.InvalidRequestException;
+import com.example.memory_guard.setting.domain.RequestStatus;
+import com.example.memory_guard.setting.dto.GuardianSettingsDto;
+import com.example.memory_guard.setting.dto.WardSettingsDto;
+import com.example.memory_guard.setting.repository.ConnectionRequestRepository;
 import com.example.memory_guard.user.domain.UserProfile;
-import com.example.memory_guard.user.dto.LoginResponseDto;
-import com.example.memory_guard.user.dto.SignupRequestDto;
-import com.example.memory_guard.user.dto.GuardSignupRequestDto;
-import com.example.memory_guard.user.dto.WardHomeResponseDto;
+import com.example.memory_guard.user.dto.*;
 import com.example.memory_guard.diary.dto.DiaryAudioInfoDto;
 import com.example.memory_guard.audio.service.AudioService;
 import com.example.memory_guard.audio.dto.response.AudioStampResponseDto;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,6 +41,7 @@ public class UserService {
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
   private final AudioService audioService;
+  private final ConnectionRequestRepository connectionRequestRepository;
 
   public void signup(SignupRequestDto signupRequest) {
     isDupUser(signupRequest);
@@ -137,6 +140,64 @@ public class UserService {
 
     managedGuardian.selectWard(wardToSelect);
     userRepository.save(managedGuardian);
+  }
+
+  @Transactional(readOnly = true)
+  public Optional<UserSearchResponseDto> searchUserByUserId(String userId) {
+    return userRepository.findByUserProfileUserId(userId)
+        .map(UserSearchResponseDto::from);
+  }
+
+  @Transactional(readOnly = true)
+  public GuardianSettingsDto getGuardianWardSettingsData(User guardian) {
+    User managedGuardian = userRepository.findById(guardian.getId())
+        .orElseThrow(() -> new UsernameNotFoundException("보호자 정보를 찾을 수 없습니다."));
+
+    List<GuardianSettingsDto.WardInfo> wards = managedGuardian.getWards().stream()
+        .map(GuardianSettingsDto.WardInfo::from)
+        .collect(Collectors.toList());
+
+    List<GuardianSettingsDto.RequestInfo> incomingRequests =
+        connectionRequestRepository.findByReceiverAndStatus(managedGuardian, RequestStatus.PENDING).stream()
+            .map(GuardianSettingsDto.RequestInfo::fromIncomingRequest)
+            .collect(Collectors.toList());
+
+    List<GuardianSettingsDto.RequestInfo> outgoingRequests =
+        connectionRequestRepository.findByRequesterAndStatus(managedGuardian, RequestStatus.PENDING).stream()
+            .map(GuardianSettingsDto.RequestInfo::fromOutgoingRequest)
+            .collect(Collectors.toList());
+
+    return GuardianSettingsDto.builder()
+        .myWards(wards)
+        .incomingRequests(incomingRequests)
+        .outgoingRequests(outgoingRequests)
+        .build();
+  }
+
+  @Transactional(readOnly = true)
+  public WardSettingsDto getWardSettingsData(User ward) {
+    User managedWard = userRepository.findById(ward.getId())
+        .orElseThrow(() -> new UsernameNotFoundException("피보호자 정보를 찾을 수 없습니다."));
+
+    List<WardSettingsDto.GuardianInfo> guardians = managedWard.getGuardians().stream()
+        .map(WardSettingsDto.GuardianInfo::from)
+        .collect(Collectors.toList());
+
+    List<WardSettingsDto.RequestInfo> incomingRequests =
+        connectionRequestRepository.findByReceiverAndStatus(managedWard, RequestStatus.PENDING).stream()
+            .map(WardSettingsDto.RequestInfo::fromIncoming)
+            .collect(Collectors.toList());
+
+    List<WardSettingsDto.RequestInfo> outgoingRequests =
+        connectionRequestRepository.findByRequesterAndStatus(managedWard, RequestStatus.PENDING).stream()
+            .map(WardSettingsDto.RequestInfo::fromOutgoing)
+            .collect(Collectors.toList());
+
+    return WardSettingsDto.builder()
+        .myGuardians(guardians)
+        .incomingRequests(incomingRequests)
+        .outgoingRequests(outgoingRequests)
+        .build();
   }
 
   private DiaryAudioInfoDto convertToDiaryAudioInfoDto(Diary diary) {

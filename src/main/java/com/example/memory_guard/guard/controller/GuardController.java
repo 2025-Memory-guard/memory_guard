@@ -2,6 +2,7 @@ package com.example.memory_guard.guard.controller;
 
 import com.example.memory_guard.guard.dto.GuardHomeResponseDto;
 import com.example.memory_guard.guard.service.GuardService;
+import com.example.memory_guard.setting.dto.GuardianSettingsDto;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -27,5 +28,11 @@ public class GuardController {
   public ResponseEntity<String> selectWard(@AuthenticationPrincipal User guardian, @PathVariable String wardId) {
     userService.selectWardForGuardian(guardian, wardId);
     return ResponseEntity.ok("동행자 선택이 변경되었습니다.");
+  }
+
+  @GetMapping("/ward/setting")
+  public ResponseEntity<GuardianSettingsDto> getGuardianSettings(@AuthenticationPrincipal User guardian) {
+    GuardianSettingsDto settingsData = userService.getGuardianWardSettingsData(guardian);
+    return ResponseEntity.ok(settingsData);
   }
 }
