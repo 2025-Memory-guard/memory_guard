@@ -1,5 +1,6 @@
 package com.example.memory_guard.user.controller;
 
+import com.example.memory_guard.user.domain.Status;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.dto.GuardManagementResponseDto;
 import com.example.memory_guard.user.dto.GuardRequestDto;
@@ -50,5 +51,15 @@ public class UserSettingController {
     ) {
         userSettingService.sendGuardRequest(user, guardRequestDto);
         return ResponseEntity.ok("보호자에게 요청이 전송되었습니다.");
+    }
+
+    //보호자가 보낸 연결 요청 수락
+    @PatchMapping("/{requestId}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long requestId,
+            @RequestBody Status status
+    ) {
+        userSettingService.updateRequestStatus(requestId, status);
+        return ResponseEntity.ok("OK");
     }
 }
