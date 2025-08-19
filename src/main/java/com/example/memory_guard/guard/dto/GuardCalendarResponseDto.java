@@ -6,14 +6,9 @@ import lombok.Getter;
 import java.time.LocalDate;
 import java.util.List;
 
+@Builder
 @Getter
 public class GuardCalendarResponseDto {
     private long monthlyAttendanceCount;
     private List<LocalDate> monthlyAttendance;
-
-    @Builder
-    public GuardCalendarResponseDto(long monthlyAttendanceCount, List<LocalDate> monthlyAttendance) {
-        this.monthlyAttendanceCount = monthlyAttendanceCount;
-        this.monthlyAttendance = monthlyAttendance;
-    }
 }

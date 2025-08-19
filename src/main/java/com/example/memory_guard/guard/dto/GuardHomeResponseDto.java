@@ -7,6 +7,7 @@ import lombok.Getter;
 import java.time.LocalDate;
 import java.util.List;
 
+@Builder
 @Getter
 public class GuardHomeResponseDto {
 
@@ -15,13 +16,4 @@ public class GuardHomeResponseDto {
     private int consecutiveRecordingDays;
     private String wardUsername;
     private List<AbstractAudioMetadata> todayRecord;
-
-    @Builder
-    public GuardHomeResponseDto(String username, List<LocalDate> weeklyStamps, int consecutiveRecordingDays, String wardUsername, List<AbstractAudioMetadata> todayRecord) {
-        this.username = username;
-        this.weeklyStamps = weeklyStamps;
-        this.consecutiveRecordingDays = consecutiveRecordingDays;
-        this.wardUsername = wardUsername;
-        this.todayRecord = todayRecord;
-    }
 }

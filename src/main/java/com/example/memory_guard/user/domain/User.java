@@ -52,6 +52,13 @@ public class User implements UserDetails {
   @JoinColumn(name = "primary_ward_id")
   private User primaryWard;
 
+  @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<GuardRequest> sentRequests = new ArrayList<>();
+
+  @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<GuardRequest> receivedRequests = new ArrayList<>();
+
+
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<AbstractAudioMetadata> audioMetadataList = new ArrayList<>();
 

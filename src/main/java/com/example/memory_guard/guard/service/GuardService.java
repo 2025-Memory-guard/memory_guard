@@ -2,10 +2,9 @@ package com.example.memory_guard.guard.service;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
-import com.example.memory_guard.guard.dto.GuardCalendarResponseDto;
-import com.example.memory_guard.guard.dto.GuardHomeResponseDto;
-import com.example.memory_guard.guard.dto.GuardReportResponseDto;
+import com.example.memory_guard.guard.dto.*;
 import com.example.memory_guard.user.domain.User;
+import com.example.memory_guard.user.dto.WardUserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +29,7 @@ public class GuardService {
         String guardianUserName = user.getUserProfile().getUsername();
 
         //ward
-        User ward = user.getWard();
+        User ward = user.getPrimaryWard();
 
         //weeklyStamp 구하기
         LocalDate today = LocalDate.now();
@@ -63,7 +62,7 @@ public class GuardService {
     public GuardReportResponseDto getReport(User user) {
         checkUser(user);
 
-        User ward = user.getWard();
+        User ward = user.getPrimaryWard();
 
         //이번 주 출석횟수 구하기
         LocalDate today = LocalDate.now();
@@ -86,7 +85,7 @@ public class GuardService {
     public GuardCalendarResponseDto getCalendar(User user) {
         checkUser(user);
 
-        User ward = user.getWard();
+        User ward = user.getPrimaryWard();
 
         //이번 주 출석횟수 구하기
         LocalDate today = LocalDate.now();
@@ -111,6 +110,19 @@ public class GuardService {
                 .monthlyAttendance(monthlyAttendance)
                 .build();
     }
+
+    public GuardSettingResponseDto getSettings(User user) {
+        checkUser(user);
+        return GuardSettingResponseDto.fromEntity(user);
+    }
+
+    //현재 모든 피보호자 + 다른 피보호자에게 받은 요청 + 보호자가 보낸 요청 모두 보여주기
+    public GuardManagementResponseDto getManagement(User user) {
+        checkUser(user);
+        return GuardManagementResponseDto.fromEntity(user.getWards(), user.getReceivedRequests(), user.getSentRequests());
+    }
+
+
 
     private static void checkUser(User user) {
         if (user.getId() == null) {
