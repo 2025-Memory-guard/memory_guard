@@ -18,12 +18,12 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/user/setting")
+@RequestMapping("/api/user")
 public class UserSettingController {
 
     private final UserSettingService userSettingService;
 
-    @GetMapping("/all-guards")
+    @GetMapping("/setting")
     public ResponseEntity<List<GuardUserDto>> getAllGuards(
             @AuthenticationPrincipal User ward
     ) {
@@ -37,14 +37,14 @@ public class UserSettingController {
         return ResponseEntity.ok(userSettingService.getManagement(ward));
     }
 
-    @GetMapping("/search-guards")
-    public ResponseEntity<Optional<User>> getWard(
+    @GetMapping("/search-guard")
+    public ResponseEntity<Optional<GuardUserDto>> getWard(
             @RequestParam String userId
     ) {
         return ResponseEntity.ok(userSettingService.getGuard(userId));
     }
 
-    @PostMapping("/enroll-guards")
+    @PostMapping("/enroll-guard")
     public ResponseEntity<?> addWard(
             @AuthenticationPrincipal User user,
             @RequestBody GuardRequestDto guardRequestDto

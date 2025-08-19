@@ -5,6 +5,7 @@ import com.example.memory_guard.guard.service.GuardService;
 import com.example.memory_guard.user.domain.Status;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.dto.GuardRequestDto;
+import com.example.memory_guard.user.dto.WardUserDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public class GuardController {
         return ResponseEntity.ok(guardService.getCalendar(user));
     }
 
-    @GetMapping("/settings")
+    @GetMapping("/setting")
     public ResponseEntity<GuardSettingResponseDto> getSettings(
             @AuthenticationPrincipal User user
     ) {
@@ -56,8 +57,8 @@ public class GuardController {
         return ResponseEntity.ok(guardService.getManagement(user));
     }
 
-    @GetMapping("/search-wards")
-    public ResponseEntity<Optional<User>> getWard(
+    @GetMapping("/search-ward")
+    public ResponseEntity<Optional<WardUserDto>> getWard(
             @RequestParam String userId
     ) {
         return ResponseEntity.ok(guardService.getWard(userId));

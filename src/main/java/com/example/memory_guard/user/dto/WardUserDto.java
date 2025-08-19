@@ -11,12 +11,12 @@ public class WardUserDto {
     private String name;
     private boolean isPrimary;
 
-    public static WardUserDto fromEntity(User primaryWard) {
+    public static WardUserDto fromEntity(User primaryWard, boolean isPrimary) {
         WardUserDto wardUserDto = new WardUserDto();
         wardUserDto.setId(primaryWard.getId());
         wardUserDto.setUserId(primaryWard.getUserProfile().getUserId());
         wardUserDto.setName(primaryWard.getUserProfile().getUsername());
-        wardUserDto.setPrimary(true);
+        wardUserDto.setPrimary(isPrimary);
         return wardUserDto;
     }
 

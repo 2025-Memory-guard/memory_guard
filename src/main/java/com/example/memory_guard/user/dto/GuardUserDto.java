@@ -10,6 +10,15 @@ public class GuardUserDto {
     private String userId;
     private String name;
 
+
+    public static GuardUserDto fromEntity(User guard) {
+        return GuardUserDto.builder()
+                .id(guard.getId())
+                .userId(guard.getUserProfile().getUserId())
+                .name(guard.getUserProfile().getUsername())
+                .build();
+    }
+
     public static GuardUserDto fromEntity(GuardUserLink guardUserLink) {
         User guardian = guardUserLink.getGuardian();
         return GuardUserDto.builder()

@@ -38,9 +38,10 @@ public class UserSettingService {
         );
     }
 
-    public Optional<User> getGuard(String userId) {
+    public Optional<GuardUserDto> getGuard(String userId) {
         return userRepository.findByUserProfileUserId(userId)
-                .filter(user -> user.getRoles().contains("ROLE_GUARD"));
+                .filter(user -> user.getRoles().contains("ROLE_GUARD"))
+                .map(GuardUserDto::fromEntity);
     }
 
     public void sendGuardRequest(User ward, GuardRequestDto guardRequestDto) {
