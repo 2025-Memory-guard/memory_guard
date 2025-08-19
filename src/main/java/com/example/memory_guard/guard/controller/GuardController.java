@@ -3,14 +3,12 @@ package com.example.memory_guard.guard.controller;
 import com.example.memory_guard.guard.dto.*;
 import com.example.memory_guard.guard.service.GuardService;
 import com.example.memory_guard.user.domain.User;
+import com.example.memory_guard.user.dto.GuardRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -62,5 +60,14 @@ public class GuardController {
             @RequestParam String userId
     ) {
         return ResponseEntity.ok(guardService.getWard(userId));
+    }
+
+    @PostMapping("/add-wards")
+    public ResponseEntity<?> addWard(
+            @AuthenticationPrincipal User user,
+            @RequestBody GuardRequestDto guardRequestDto
+    ) {
+        guardService.sendGuardRequest(user, guardRequestDto);
+        return ResponseEntity.ok("피보호자에게 요청이 전송되었습니다.");
     }
 }

@@ -2,6 +2,7 @@ package com.example.memory_guard.user.dto;
 
 import com.example.memory_guard.user.domain.GuardRequest;
 import com.example.memory_guard.user.domain.Status;
+import com.example.memory_guard.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,6 +24,14 @@ public class GuardRequestDto {
                 .receiverId(request.getReceiver().getId())
                 .receiverUserId(request.getReceiver().getUserProfile().getUserId())
                 .status(request.getStatus())
+                .build();
+    }
+
+    public static GuardRequest toEntity(User requester, User receiver) {
+        return GuardRequest.builder()
+                .requester(requester)
+                .receiver(receiver)
+                .status(Status.PENDING)
                 .build();
     }
 }

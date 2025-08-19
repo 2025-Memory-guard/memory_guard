@@ -3,9 +3,11 @@ package com.example.memory_guard.guard.service;
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
 import com.example.memory_guard.guard.dto.*;
+import com.example.memory_guard.user.domain.GuardRequest;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.dto.GuardRequestDto;
 import com.example.memory_guard.user.dto.WardUserDto;
+import com.example.memory_guard.user.repository.GuardRequestRepository;
 import com.example.memory_guard.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class GuardService {
 
     private final AudioMetadataRepository audioMetadataRepository;
     private final UserRepository userRepository;
+    private final GuardRequestRepository guardRequestRepository;
 
     public GuardHomeResponseDto getHomeData(User user) {
         checkUser(user);
@@ -132,8 +135,16 @@ public class GuardService {
                 .filter(user -> user.getRoles().contains("ROLE_USER"));
     }
 
-    public GuardRequestDto addRequest() {
+    public void sendGuardRequest(User guard, GuardRequestDto guardRequestDto) {
+        checkUser(guard);
+        User ward = userRepository.findUserById(guardRequestDto.getReceiverId())
+                .orElseThrow(() -> new IllegalArgumentException("요청 대상 피보호자를 찾을 수 없습니다."));
 
+        GuardRequest guardRequest = GuardRequestDto.toEntity(guard, ward);
+        ward.getReceivedRequests().add(guardRequest);
+        guard.getSentRequests().add(guardRequest);
+
+        guardRequestRepository.save(guardRequest);
     }
 
     private static void checkUser(User user) {
