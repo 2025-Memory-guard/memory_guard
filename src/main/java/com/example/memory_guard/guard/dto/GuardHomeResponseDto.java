@@ -1,6 +1,5 @@
 package com.example.memory_guard.guard.dto;
 
-import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,20 +7,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Getter
+@Builder
 public class GuardHomeResponseDto {
+  private String selectedWardName;
+  private int consecutiveRecordingDays;
+  private List<LocalDate> weeklyStamps;
+  private List<DiaryInfo> diaryList;
 
-    private String username;
-    private List<LocalDate> weeklyStamps;
-    private int consecutiveRecordingDays;
-    private String wardUsername;
-    private List<AbstractAudioMetadata> todayRecord;
-
-    @Builder
-    public GuardHomeResponseDto(String username, List<LocalDate> weeklyStamps, int consecutiveRecordingDays, String wardUsername, List<AbstractAudioMetadata> todayRecord) {
-        this.username = username;
-        this.weeklyStamps = weeklyStamps;
-        this.consecutiveRecordingDays = consecutiveRecordingDays;
-        this.wardUsername = wardUsername;
-        this.todayRecord = todayRecord;
-    }
+  @Getter
+  @Builder
+  public static class DiaryInfo {
+    private String title;
+    private LocalDate date;
+  }
 }

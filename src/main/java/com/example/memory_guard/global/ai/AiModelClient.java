@@ -34,16 +34,29 @@ public class AiModelClient {
     this.audioConversionUtils = audioConversionUtils;
   }
 
+//  public OverallAnalysisResponseDto analyzeAudio(AbstractAudioMetadata audioMetadata) throws IOException {
+//    File file = audioMetadata.getFile();
+//    String fileName = file.getName();
+//    String base64AudioData = encodeToBase64(file);
+//
+//    log.info("AI 서버로 음성 분석 요청을 보냅니다. fileName: {}", fileName);
+//
+//    AudioAnalysisRequestDto requestDto = createAudioRequestDto(base64AudioData, fileName);
+//
+//    return sendHttpJsonRequest("/audio/evaluate", requestDto, OverallAnalysisResponseDto.class);
+//  }
+
   public OverallAnalysisResponseDto analyzeAudio(AbstractAudioMetadata audioMetadata) throws IOException {
-    File file = audioMetadata.getFile();
-    String fileName = file.getName();
-    String base64AudioData = encodeToBase64(file);
+    OverallAnalysisResponseDto response = new OverallAnalysisResponseDto();
+    response.setScore(85.5);
+    response.setSpeakingRate(150.0);
+    response.setUtteranceVolume(70.0);
+    response.setAvgSilenceDuration(0.5);
+    response.setVocabularyAccuracy(90.0);
+    response.setFillerFrequency(2.0);
+    response.setRepetitionRatio(5.0);
 
-    log.info("AI 서버로 음성 분석 요청을 보냅니다. fileName: {}", fileName);
-
-    AudioAnalysisRequestDto requestDto = createAudioRequestDto(base64AudioData, fileName);
-
-    return sendHttpJsonRequest("/audio/evaluate", requestDto, OverallAnalysisResponseDto.class);
+    return response;
   }
 
   public OverallAnalysisResponseDto analyzeAudio(MultipartFile multipartFile) {
@@ -70,16 +83,25 @@ public class AiModelClient {
     return sendHttpJsonRequest("/audio/translate/text", requestDto, AudioTranscriptionResponseDto.class);
   }
 
+//  public AudioTranscriptionResponseDto extractAudioText(AbstractAudioMetadata metadata) throws IOException {
+//    File file = metadata.getFile();
+//    String fileName = file.getName();
+//    String base64AudioData = encodeToBase64(file);
+//
+//    log.info("AI 서버로 음성 변환 요청");
+//    log.info("fileName: {}", fileName);
+//    AudioAnalysisRequestDto requestDto = createAudioRequestDto(base64AudioData, fileName);
+//
+//    return sendHttpJsonRequest("/audio/translate/text", requestDto, AudioTranscriptionResponseDto.class);
+//  }
+
   public AudioTranscriptionResponseDto extractAudioText(AbstractAudioMetadata metadata) throws IOException {
-    File file = metadata.getFile();
-    String fileName = file.getName();
-    String base64AudioData = encodeToBase64(file);
+    log.info("AI 서버로 음성 변환 요청 (테스트용 더미 데이터 반환)");
 
-    log.info("AI 서버로 음성 변환 요청");
-    log.info("fileName: {}", fileName);
-    AudioAnalysisRequestDto requestDto = createAudioRequestDto(base64AudioData, fileName);
-
-    return sendHttpJsonRequest("/audio/translate/text", requestDto, AudioTranscriptionResponseDto.class);
+    return AudioTranscriptionResponseDto.builder()
+        .audioId(2L)
+        .audioText("오늘 하루도 고생하셨습니다. 내일은 더 좋은 일이 있기를 바랍니다.")
+        .build();
   }
 
   public SpeakSentenceResponseDto speakSentenceProcess(MultipartFile audioFile, String sentence) throws IOException {

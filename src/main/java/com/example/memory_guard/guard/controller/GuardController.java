@@ -1,45 +1,31 @@
 package com.example.memory_guard.guard.controller;
 
-import com.example.memory_guard.guard.dto.GuardCalendarResponseDto;
 import com.example.memory_guard.guard.dto.GuardHomeResponseDto;
-import com.example.memory_guard.guard.dto.GuardReportResponseDto;
 import com.example.memory_guard.guard.service.GuardService;
 import com.example.memory_guard.user.domain.User;
+import com.example.memory_guard.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/guard")
+@RequiredArgsConstructor
 public class GuardController {
 
-    private final GuardService guardService;
+  private final UserService userService;
+  private final GuardService guardService;
 
-    @GetMapping("/home")
-    public ResponseEntity<GuardHomeResponseDto> getHomeData(
-            @AuthenticationPrincipal User user
-    ) {
-        return ResponseEntity.ok(guardService.getHomeData(user));
-    }
+  @GetMapping("/home")
+  public ResponseEntity<GuardHomeResponseDto> getGuardHomePage(@AuthenticationPrincipal User guardian) {
+    GuardHomeResponseDto response = guardService.getGuardHomeData(guardian);
+    return ResponseEntity.ok(response);
+  }
 
-    @GetMapping("/weekly-report")
-    public ResponseEntity<GuardReportResponseDto> getReport(
-            @AuthenticationPrincipal User user
-    ) {
-        return ResponseEntity.ok(guardService.getReport(user));
-    }
-
-    @GetMapping("/calendar")
-    public ResponseEntity<GuardCalendarResponseDto> getCalendar(
-            @AuthenticationPrincipal User user
-    ) {
-        return ResponseEntity.ok(guardService.getCalendar(user));
-    }
-
+  @PatchMapping("/selectWard/{wardId}")
+  public ResponseEntity<String> selectWard(@AuthenticationPrincipal User guardian, @PathVariable String wardId) {
+    userService.selectWardForGuardian(guardian, wardId);
+    return ResponseEntity.ok("동행자 선택이 변경되었습니다.");
+  }
 }

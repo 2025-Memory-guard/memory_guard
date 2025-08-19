@@ -34,6 +34,10 @@ public class User implements UserDetails {
 
   private double avgScore = 0.0;
 
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "selected_ward_id")
+  private User selectedWard;
+
   @ManyToMany(fetch = FetchType.EAGER)
   @JoinTable(
       name = "user_roles",
@@ -45,8 +49,8 @@ public class User implements UserDetails {
   @OneToMany(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
   private List<GuardUserLink> wards = new ArrayList<>();
 
-  @OneToOne(mappedBy = "ward", cascade = CascadeType.PERSIST, orphanRemoval = true)
-  private GuardUserLink guardian;
+  @OneToMany(mappedBy = "ward", cascade = CascadeType.PERSIST, orphanRemoval = true)
+  private List<GuardUserLink> guardians = new ArrayList<>();
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<AbstractAudioMetadata> audioMetadataList = new ArrayList<>();
@@ -66,11 +70,11 @@ public class User implements UserDetails {
   public void addWard(User ward){
     GuardUserLink guardUserLink = new GuardUserLink(this, ward);
     this.wards.add(guardUserLink);
-    ward.setGuardian(guardUserLink);
+    ward.addGuardian(guardUserLink);
   }
 
-  public void setGuardian(GuardUserLink guardUserLink) {
-    this.guardian = guardUserLink;
+  public void addGuardian(GuardUserLink guardUserLink) {
+    this.guardians.add(guardUserLink);
   }
 
   public List<User> getWards(){
@@ -79,8 +83,10 @@ public class User implements UserDetails {
         .collect(Collectors.toList());
   }
 
-  public User getGuardian(){
-    return this.guardian != null ? guardian.getGuardian() : null;
+  public List<User> getGuardians() {
+    return this.guardians.stream()
+        .map(GuardUserLink::getGuardian)
+        .collect(Collectors.toList());
   }
 
   public void updateRecordingStreak() {
@@ -119,6 +125,10 @@ public class User implements UserDetails {
     } else {
       this.avgScore = ((this.avgScore * (totalEvaluations - 1)) + newScore) / totalEvaluations;
     }
+  }
+
+  public void selectWard(User ward) {
+    this.selectedWard = ward;
   }
 
   @Override

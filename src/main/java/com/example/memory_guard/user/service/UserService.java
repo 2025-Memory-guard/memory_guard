@@ -105,7 +105,7 @@ public class UserService {
   @Transactional(readOnly = true)
   public WardHomeResponseDto getWardHomeData(User user) {
     User persistentUser = userRepository.findById(user.getId())
-        .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + user.getId()));
+        .orElseThrow(() -> new UsernameNotFoundException("피보호자를 찾을 수 없습니다.: " + user.getId()));
 
     AudioStampResponseDto audioStamps = audioService.getAudioStamps(persistentUser);
 
@@ -118,6 +118,25 @@ public class UserService {
         .weeklyStamps(audioStamps.getWeeklyStamps())
         .diaryList(diaryList)
         .build();
+  }
+
+  @Transactional
+  public void selectWardForGuardian(User guardian, String wardId) {
+    User managedGuardian = userRepository.findById(guardian.getId())
+        .orElseThrow(() -> new UsernameNotFoundException("보호자를 찾을 수 없습니다. ID: " + guardian.getId()));
+
+    User wardToSelect = userRepository.findByUserProfileUserId(wardId)
+        .orElseThrow(() -> new InvalidRequestException("선택한 피보호자를 찾을 수 없습니다. ID: " + wardId));
+
+    boolean isMyWard = managedGuardian.getWards().stream()
+        .anyMatch(ward -> ward.getUserProfile().getUserId().equals(wardId));
+
+    if (!isMyWard) {
+      throw new InvalidRequestException("관리 대상이 아닌 피보호자입니다.");
+    }
+
+    managedGuardian.selectWard(wardToSelect);
+    userRepository.save(managedGuardian);
   }
 
   private DiaryAudioInfoDto convertToDiaryAudioInfoDto(Diary diary) {

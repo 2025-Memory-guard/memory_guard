@@ -19,8 +19,8 @@ public class GuardUserLink {
   @JoinColumn(name = "guardian_id", nullable = false)
   private User guardian;
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-  @JoinColumn(name = "ward_id", nullable = false, unique = true)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ward_id", nullable = false)
   private User ward;
 
   public GuardUserLink(User guardian, User ward) {
