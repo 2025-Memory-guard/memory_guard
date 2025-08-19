@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -55,10 +57,10 @@ public class GuardController {
         return ResponseEntity.ok(guardService.getManagement(user));
     }
 
-//    @GetMapping("/search-wards")
-//    public ResponseEntity<User> getWard(
-//            @RequestParam String userId
-//    ) {
-//        return ResponseEntity.ok(guardService.getWard(userId));
-//    }
+    @GetMapping("/search-wards")
+    public ResponseEntity<Optional<User>> getWard(
+            @RequestParam String userId
+    ) {
+        return ResponseEntity.ok(guardService.getWard(userId));
+    }
 }

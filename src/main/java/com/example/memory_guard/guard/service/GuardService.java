@@ -4,7 +4,9 @@ import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
 import com.example.memory_guard.guard.dto.*;
 import com.example.memory_guard.user.domain.User;
+import com.example.memory_guard.user.dto.GuardRequestDto;
 import com.example.memory_guard.user.dto.WardUserDto;
+import com.example.memory_guard.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class GuardService {
 
     private final AudioMetadataRepository audioMetadataRepository;
+    private final UserRepository userRepository;
 
     public GuardHomeResponseDto getHomeData(User user) {
         checkUser(user);
@@ -122,7 +126,15 @@ public class GuardService {
         return GuardManagementResponseDto.fromEntity(user.getWards(), user.getReceivedRequests(), user.getSentRequests());
     }
 
+    //피보호자 아이디로 검색
+    public Optional<User> getWard(String userId) {
+        return userRepository.findByUserProfileUserId(userId)
+                .filter(user -> user.getRoles().contains("ROLE_USER"));
+    }
 
+    public GuardRequestDto addRequest() {
+
+    }
 
     private static void checkUser(User user) {
         if (user.getId() == null) {
