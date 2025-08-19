@@ -1,6 +1,6 @@
 package com.example.memory_guard.audio.controller;
 
-import com.example.memory_guard.audio.dto.response.AudioAnalysisWardReport;
+import com.example.memory_guard.audio.dto.response.AudioAnalysisReport;
 import com.example.memory_guard.analysis.dto.SentenceAnalysisResponseDto;
 import com.example.memory_guard.analysis.dto.FinalFeedbackResponseDto;
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
@@ -10,7 +10,6 @@ import com.example.memory_guard.audio.service.AudioService;
 import com.example.memory_guard.analysis.service.SentenceAnalysisService;
 import com.example.memory_guard.analysis.service.FinalFeedbackService;
 import com.example.memory_guard.diary.domain.Diary;
-import com.example.memory_guard.diary.dto.DiaryResponseDto;
 import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -69,18 +68,18 @@ public class AudioController {
       return ResponseEntity.ok(audioSaveResponseDto);
     }
 
-    // 따라말하기까지 끝나고 완료하기를 누르면
   @GetMapping("/report/{audioId}")
-  public ResponseEntity<AudioAnalysisWardReport> audioReport(@PathVariable Long audioId, @AuthenticationPrincipal User user) throws IOException {
+  public ResponseEntity<AudioAnalysisReport> audioReport(@PathVariable Long audioId, @AuthenticationPrincipal User user) throws IOException {
 
     AbstractAudioMetadata metadata = audioService.getAudioMetadata(audioId);
 
     audioService.audioEvaluate(metadata, user);
 
-    AudioAnalysisWardReport report = audioService.audioEvaluateWardReport(metadata, user);
+    AudioAnalysisReport report = audioService.audioEvaluateWardReport(metadata, user);
 
     return ResponseEntity.ok(report);
   }
+
 
   // 음성기록을 하고 "다음으로" 버튼을 누르면 / 테스트 확인
   @GetMapping("/{audioId}")

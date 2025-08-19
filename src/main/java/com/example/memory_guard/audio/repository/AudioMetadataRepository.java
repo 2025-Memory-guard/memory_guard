@@ -19,4 +19,6 @@ public interface AudioMetadataRepository extends JpaRepository<AbstractAudioMeta
   List<AbstractAudioMetadata> findByUserOrderByCreatedAtDesc(User user);
 
   List<AbstractAudioMetadata> findByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end);
+
+  Optional<AbstractAudioMetadata> findTopByUserOrderByCreatedAtDesc(User user);
 }

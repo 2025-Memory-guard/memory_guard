@@ -7,7 +7,7 @@ import com.example.memory_guard.analysis.domain.AbstractOverallAnalysis;
 import com.example.memory_guard.analysis.domain.DementiaAnalysis;
 import com.example.memory_guard.analysis.domain.FeedbackType;
 import com.example.memory_guard.audio.dto.response.AudioStampResponseDto;
-import com.example.memory_guard.audio.dto.response.AudioAnalysisWardReport;
+import com.example.memory_guard.audio.dto.response.AudioAnalysisReport;
 import com.example.memory_guard.audio.dto.response.AudioTranscriptionResponseDto;
 import com.example.memory_guard.audio.dto.response.AudioSaveResultDto;
 import com.example.memory_guard.audio.dto.response.SpeakSentenceResponseDto;
@@ -62,6 +62,11 @@ public class AudioService {
 
   public AbstractAudioMetadata getAudioMetadata(Long audioId) throws IOException {
     return audioStorageService.getFile(audioId);
+  }
+
+  public AbstractAudioMetadata getLatestAudioMetadata(User user) {
+    return audioMetadataRepository.findTopByUserOrderByCreatedAtDesc(user)
+        .orElseThrow(() -> new IllegalStateException("피보호자의 녹음 기록이 존재하지 않습니다."));
   }
 
   public AudioStampResponseDto getAudioStamps(User user) {
@@ -151,7 +156,7 @@ public class AudioService {
         });
   }
 
-  public AudioAnalysisWardReport audioEvaluateWardReport(AbstractAudioMetadata metadata, User user){
+  public AudioAnalysisReport audioEvaluateWardReport(AbstractAudioMetadata metadata, User user){
     List<AbstractOverallAnalysis> feedbacks = evaluationFeedbackRepository.findByAudioMetadataId(metadata.getId());
 
     User persistUser = userRepository.findById(user.getId())
@@ -182,12 +187,15 @@ public class AudioService {
     return aiModelClient.speakSentenceProcess(audioFile, sentence);
   }
 
-  private static AudioAnalysisWardReport createAudioEvaluationWardReport(User user, DementiaAnalysis dementiaFeedback, int attendanceRate) {
-    return AudioAnalysisWardReport.builder()
+  private static AudioAnalysisReport createAudioEvaluationWardReport(User user, DementiaAnalysis dementiaFeedback, int attendanceRate) {
+    return AudioAnalysisReport.builder()
         .speakingRate(dementiaFeedback.getSpeakingRate())
         .utteranceVolume(dementiaFeedback.getUtteranceVolume())
         .avgSilenceDuration(dementiaFeedback.getAvgSilenceDuration())
         .vocabularyAccuracy(dementiaFeedback.getVocabularyAccuracy())
+        .dementiaProbability(dementiaFeedback.getDementiaProbability())
+        .repetitionRatio(dementiaFeedback.getRepetitionRatio())
+        .fillerFrequency(dementiaFeedback.getFillerFrequency())
         .avgRecordingTime(user.getAvgRecordingTime())
         .attendanceRate(attendanceRate)
         .avgScore(user.getAvgScore())

@@ -1,5 +1,8 @@
 package com.example.memory_guard.guard.controller;
 
+import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
+import com.example.memory_guard.audio.dto.response.AudioAnalysisReport;
+import com.example.memory_guard.audio.service.AudioService;
 import com.example.memory_guard.guard.dto.*;
 import com.example.memory_guard.guard.service.GuardService;
 import com.example.memory_guard.user.domain.Status;
@@ -12,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Slf4j
@@ -21,6 +25,7 @@ import java.util.Optional;
 public class GuardController {
 
     private final GuardService guardService;
+    private final AudioService audioService;
 
     @GetMapping("/home")
     public ResponseEntity<GuardHomeResponseDto> getHomeData(
@@ -81,5 +86,22 @@ public class GuardController {
     ) {
         guardService.updateRequestStatus(requestId, status);
         return ResponseEntity.ok("OK");
+    }
+
+    @GetMapping("/report")
+    public ResponseEntity<AudioAnalysisReport> audioReport(@AuthenticationPrincipal User guardian) throws IOException {
+
+        User ward = guardian.getPrimaryWard();
+        if (ward == null) {
+            throw new IllegalStateException("주 피보호자가 설정되어 있지 않습니다.");
+        }
+
+        AbstractAudioMetadata latestMetadata = audioService.getLatestAudioMetadata(ward);
+
+        audioService.audioEvaluate(latestMetadata, ward);
+
+        AudioAnalysisReport report = audioService.audioEvaluateWardReport(latestMetadata, ward);
+
+        return ResponseEntity.ok(report);
     }
 }
