@@ -153,6 +153,10 @@ public class AudioService {
 
   public AudioAnalysisWardReport audioEvaluateWardReport(AbstractAudioMetadata metadata, User user){
     List<AbstractOverallAnalysis> feedbacks = evaluationFeedbackRepository.findByAudioMetadataId(metadata.getId());
+
+    User persistUser = userRepository.findById(user.getId())
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
+
     
     DementiaAnalysis dementiaFeedback = feedbacks.stream()
         .filter(feedback -> feedback.getFeedbackType() == FeedbackType.DEMENTIA)
@@ -160,10 +164,10 @@ public class AudioService {
         .findFirst()
         .orElseThrow(() -> new IllegalStateException("해당 음성에 대한 DEMENTIA 피드백을 찾을 수 없습니다."));
     
-    AudioStampResponseDto audioStamps = getAudioStamps(user);
+    AudioStampResponseDto audioStamps = getAudioStamps(persistUser);
     int attendanceRate = audioStamps.getWeeklyStamps().size();
     
-    return createAudioEvaluationWardReport(user, dementiaFeedback, attendanceRate);
+    return createAudioEvaluationWardReport(persistUser, dementiaFeedback, attendanceRate);
   }
 
   public Diary getDairyByAudioId(Long audioId) {
