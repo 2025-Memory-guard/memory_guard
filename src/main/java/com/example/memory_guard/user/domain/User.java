@@ -42,14 +42,22 @@ public class User implements UserDetails {
   )
   private Set<Role> roles = new HashSet<>();
 
-//  @OneToMany(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
-//  private List<GuardUserLink> wards = new ArrayList<>();
+  @OneToMany(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
+  private List<GuardUserLink> wards = new ArrayList<>();
 
-  @OneToOne(mappedBy = "ward", cascade = CascadeType.PERSIST, orphanRemoval = true)
-  private User guardian;
+  @OneToMany(mappedBy = "ward", cascade = CascadeType.PERSIST, orphanRemoval = true)
+  private List<GuardUserLink> guardians = new ArrayList<>();
 
-  @OneToOne(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
-  private User ward;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "primary_ward_id")
+  private User primaryWard;
+
+  @OneToMany(mappedBy = "requester")
+  private List<GuardRequest> sentRequests = new ArrayList<>();
+
+  @OneToMany(mappedBy = "receiver")
+  private List<GuardRequest> receivedRequests = new ArrayList<>();
+
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<AbstractAudioMetadata> audioMetadataList = new ArrayList<>();
@@ -66,36 +74,26 @@ public class User implements UserDetails {
     this.roles.add(role);
   }
 
-  public void addWard(User ward){
-    //GuardUserLink guardUserLink = new GuardUserLink(this, ward);
-    //this.wards.add(guardUserLink);
-    this.ward = ward;
-    //ward.setGuardian(guardUserLink);
-    ward.setGuardian(this);
+  public GuardUserLink addWard(User ward){
+    GuardUserLink guardUserLink = new GuardUserLink(this, ward);
+    this.wards.add(guardUserLink);
+    ward.getGuardians().add(guardUserLink);
+    return guardUserLink;
   }
 
-//  public void setGuardian(GuardUserLink guardUserLink) {
-//    this.guardian = guardUserLink;
-//  }
-
-  //수정필요
-  public void setGuardian(User user) {
-    this.guardian = user;
+  public GuardUserLink addGuardian(User guard) {
+    GuardUserLink guardUserLink = new GuardUserLink(guard, this);
+    this.guardians.add(guardUserLink);
+    guard.getWards().add(guardUserLink);
+    return guardUserLink;
   }
 
-  //수정 필요
-  public List<User> getWards(){
-//    return wards.stream()
-//        .map(GuardUserLink::getWard)
-//        .collect(Collectors.toList());
-
-    List<User> wardList = new ArrayList<>();
-    wardList.add(ward);
-    return wardList;
-  }
-
-  public User getGuardian(){
-    return this.guardian != null ? guardian.getGuardian() : null;
+  public void setPrimaryWard(User ward) {
+    boolean exists = wards.stream().anyMatch(link -> link.getWard().equals(ward));
+    if (!exists) {
+      throw new IllegalArgumentException("이 피보호자는 연결되어 있지 않습니다.");
+    }
+    this.primaryWard = ward;
   }
 
   public void updateRecordingStreak() {

@@ -2,10 +2,16 @@ package com.example.memory_guard.guard.service;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
-import com.example.memory_guard.guard.dto.GuardCalendarResponseDto;
-import com.example.memory_guard.guard.dto.GuardHomeResponseDto;
-import com.example.memory_guard.guard.dto.GuardReportResponseDto;
+import com.example.memory_guard.guard.dto.*;
+import com.example.memory_guard.user.domain.GuardRequest;
+import com.example.memory_guard.user.domain.GuardUserLink;
+import com.example.memory_guard.user.domain.Status;
 import com.example.memory_guard.user.domain.User;
+import com.example.memory_guard.user.dto.GuardRequestDto;
+import com.example.memory_guard.user.dto.WardUserDto;
+import com.example.memory_guard.user.repository.GuardRequestRepository;
+import com.example.memory_guard.user.repository.GuardUserLinkRepository;
+import com.example.memory_guard.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +29,9 @@ import java.util.stream.Collectors;
 public class GuardService {
 
     private final AudioMetadataRepository audioMetadataRepository;
+    private final UserRepository userRepository;
+    private final GuardRequestRepository guardRequestRepository;
+    private final GuardUserLinkRepository guardUserLinkRepository;
 
     public GuardHomeResponseDto getHomeData(User user) {
         checkUser(user);
@@ -30,7 +40,7 @@ public class GuardService {
         String guardianUserName = user.getUserProfile().getUsername();
 
         //ward
-        User ward = user.getWard();
+        User ward = user.getPrimaryWard();
 
         //weeklyStamp 구하기
         LocalDate today = LocalDate.now();
@@ -63,7 +73,7 @@ public class GuardService {
     public GuardReportResponseDto getReport(User user) {
         checkUser(user);
 
-        User ward = user.getWard();
+        User ward = user.getPrimaryWard();
 
         //이번 주 출석횟수 구하기
         LocalDate today = LocalDate.now();
@@ -86,7 +96,7 @@ public class GuardService {
     public GuardCalendarResponseDto getCalendar(User user) {
         checkUser(user);
 
-        User ward = user.getWard();
+        User ward = user.getPrimaryWard();
 
         //이번 주 출석횟수 구하기
         LocalDate today = LocalDate.now();
@@ -110,6 +120,64 @@ public class GuardService {
                 .monthlyAttendanceCount(monthlyAttendanceCount)
                 .monthlyAttendance(monthlyAttendance)
                 .build();
+    }
+
+    public GuardSettingResponseDto getSettings(User user) {
+        checkUser(user);
+        return GuardSettingResponseDto.fromEntity(user);
+    }
+
+    //현재 모든 피보호자 + 다른 피보호자에게 받은 요청 + 보호자가 보낸 요청 모두 보여주기
+    public GuardManagementResponseDto getManagement(User user) {
+        checkUser(user);
+        return GuardManagementResponseDto.fromEntity(user.getWards(), user.getReceivedRequests(), user.getSentRequests());
+    }
+
+    //피보호자 아이디로 검색
+    public Optional<User> getWard(String userId) {
+        return userRepository.findByUserProfileUserId(userId)
+                .filter(user -> user.getRoles().contains("ROLE_USER"));
+    }
+
+    public void sendGuardRequest(User guard, GuardRequestDto guardRequestDto) {
+        checkUser(guard);
+        User ward = userRepository.findUserById(guardRequestDto.getReceiverId())
+                .orElseThrow(() -> new IllegalArgumentException("요청 대상 피보호자를 찾을 수 없습니다."));
+
+        GuardRequest guardRequest = GuardRequestDto.toEntity(guard, ward);
+        ward.getReceivedRequests().add(guardRequest);
+        guard.getSentRequests().add(guardRequest);
+
+        guardRequestRepository.save(guardRequest);
+    }
+
+    public void updateRequestStatus(Long requestId, Status status) {
+        GuardRequest request = guardRequestRepository.findGuardRequestById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("요청을 찾을 수가 없습니다"));
+
+        if (request.getStatus() != Status.PENDING) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+
+        User guard = request.getReceiver();
+        User ward = request.getRequester();
+
+        //요청이 거절되었을 떄
+        if (status == Status.REJECTED) {
+            guard.getReceivedRequests().remove(request);
+            ward.getSentRequests().remove(request);
+            guardRequestRepository.delete(request);
+        }
+
+        //요청 수락되었을 떄
+        if (status == Status.ACCEPTED) {
+            GuardUserLink guardUserLink = ward.addGuardian(guard);
+            guardUserLinkRepository.save(guardUserLink);
+
+            guard.getReceivedRequests().remove(request);
+            ward.getSentRequests().remove(request);
+            guardRequestRepository.delete(request);
+        }
     }
 
     private static void checkUser(User user) {
