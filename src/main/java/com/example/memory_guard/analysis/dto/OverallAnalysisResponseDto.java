@@ -8,6 +8,7 @@ import lombok.Getter;
 public class OverallAnalysisResponseDto {
 
   private double score;
+  private double dementiaProbability;
   private double speakingRate;
   private double utteranceVolume;
   private double avgSilenceDuration;
