@@ -120,6 +120,18 @@ public class UserService {
         .build();
   }
 
+  @Transactional
+  public void selectWardForGuardian(User guardian, String wardId) {
+    User managedGuardian = userRepository.findById(guardian.getId())
+        .orElseThrow(() -> new UsernameNotFoundException("보호자를 찾을 수 없습니다. ID: " + guardian.getId()));
+
+    User wardToSelect = userRepository.findByUserProfileUserId(wardId)
+        .orElseThrow(() -> new InvalidRequestException("선택한 피보호자를 찾을 수 없습니다. ID: " + wardId));
+
+    managedGuardian.setPrimaryWard(wardToSelect);
+    userRepository.save(managedGuardian);
+  }
+
   private DiaryAudioInfoDto convertToDiaryAudioInfoDto(Diary diary) {
     return DiaryAudioInfoDto.builder()
         .audioId(diary.getAudioMetadata().getId())

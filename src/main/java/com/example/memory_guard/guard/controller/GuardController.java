@@ -9,6 +9,7 @@ import com.example.memory_guard.user.domain.Status;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.dto.GuardRequestDto;
 import com.example.memory_guard.user.dto.WardUserDto;
+import com.example.memory_guard.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ public class GuardController {
 
     private final GuardService guardService;
     private final AudioService audioService;
+    private final UserService userService;
 
     @GetMapping("/home")
     public ResponseEntity<GuardHomeResponseDto> getHomeData(
@@ -86,6 +88,12 @@ public class GuardController {
     ) {
         guardService.updateRequestStatus(requestId, status);
         return ResponseEntity.ok("OK");
+    }
+
+    @PatchMapping("/selectWard/{wardId}")
+    public ResponseEntity<String> selectWard(@AuthenticationPrincipal User guardian, @PathVariable String wardId) {
+        userService.selectWardForGuardian(guardian, wardId);
+        return ResponseEntity.ok("동행자 선택이 변경되었습니다.");
     }
 
     @GetMapping("/report")
