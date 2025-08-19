@@ -45,16 +45,20 @@ public class User implements UserDetails {
   @OneToMany(mappedBy = "guardian", cascade = CascadeType.PERSIST, orphanRemoval = true)
   private List<GuardUserLink> wards = new ArrayList<>();
 
+  // OneToOne -> OneToMany 로 변경
   @OneToMany(mappedBy = "ward", cascade = CascadeType.PERSIST, orphanRemoval = true)
   private List<GuardUserLink> guardians = new ArrayList<>();
 
+  //추가
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "primary_ward_id")
   private User primaryWard;
 
+  //추가
   @OneToMany(mappedBy = "requester")
   private List<GuardRequest> sentRequests = new ArrayList<>();
 
+  //추가
   @OneToMany(mappedBy = "receiver")
   private List<GuardRequest> receivedRequests = new ArrayList<>();
 
@@ -118,7 +122,7 @@ public class User implements UserDetails {
 
   public void updateAvgRecordingTime(int newRecordingTimeSeconds) {
     int totalRecordings = this.audioMetadataList.size();
-    if (totalRecordings == 0) {
+    if (totalRecordings == 1) {
       this.avgRecordingTime = newRecordingTimeSeconds;
     } else {
       this.avgRecordingTime = ((this.avgRecordingTime * (totalRecordings - 1)) + newRecordingTimeSeconds) / totalRecordings;
