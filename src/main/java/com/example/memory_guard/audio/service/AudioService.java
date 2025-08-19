@@ -139,7 +139,7 @@ public class AudioService {
   @Transactional
   public void audioEvaluate(AbstractAudioMetadata metadata, User user) throws IOException {
     List<AbstractOverallAnalysis> audioFeedbacks = audioEvaluationService.evaluate(metadata, user);
-    
+    log.info("AUDIO SCORE: {}", audioFeedbacks.get(0).getScore());
     // DEMENTIA 타입의 피드백에서 score를 추출하여 사용자 평균 점수 업데이트
     audioFeedbacks.stream()
         .filter(feedback -> feedback.getFeedbackType() == FeedbackType.DEMENTIA)

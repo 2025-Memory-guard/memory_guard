@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DementiaAnalysis extends AbstractOverallAnalysis {
 
-  private double score;
-
   private double dementiaProbability;
 
   private double speakingRate; // o
@@ -38,7 +36,6 @@ public class DementiaAnalysis extends AbstractOverallAnalysis {
                           double repetitionRatio,
                           double score, double dementiaProbability){
     super(audioMetadata, FeedbackType.DEMENTIA, score);
-    this.score = score1;
     this.speakingRate = speakingRate;
     this.utteranceVolume = utteranceVolume;
     this.avgSilenceDuration = avgSilenceDuration;

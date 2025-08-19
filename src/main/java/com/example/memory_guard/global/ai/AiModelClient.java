@@ -1,5 +1,6 @@
 package com.example.memory_guard.global.ai;
 
+import com.example.memory_guard.analysis.dto.AiEvaluateApiResponse;
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.dto.request.AudioAnalysisRequestDto;
 import com.example.memory_guard.audio.dto.request.SpeakSentenceRequestDto;
@@ -43,20 +44,27 @@ public class AiModelClient {
 //
 //    AudioAnalysisRequestDto requestDto = createAudioRequestDto(base64AudioData, fileName);
 //
-//    return sendHttpJsonRequest("/audio/evaluate", requestDto, OverallAnalysisResponseDto.class);
+//    AiEvaluateApiResponse apiResponse = sendHttpJsonRequest("/audio/evaluate", requestDto, AiEvaluateApiResponse.class);
+//
+//    if(apiResponse !=null&&apiResponse.isSuccess()&&apiResponse.getData()!=null) {
+//    return apiResponse.getData();
+//  } else {
+//    log.error("AI 서버로부터 분석 데이터를 받는데 실패했습니다. 응답: {}", apiResponse);
+//    throw new RuntimeException("AI 서버 분석 실패: " + (apiResponse != null ? apiResponse.getMessage() : "응답 없음"));
 //  }
+//}
 
-  public OverallAnalysisResponseDto analyzeAudio(AbstractAudioMetadata audioMetadata) throws IOException {
-    log.info("AI 서버로 음성 분석 요청을 보냅니다 (테스트용 더미 데이터 반환)");
+public OverallAnalysisResponseDto analyzeAudio(AbstractAudioMetadata audioMetadata) throws IOException {
+  log.info("AI 서버로 음성 분석 요청을 보냅니다 (테스트용 더미 데이터 반환)");
 
-    OverallAnalysisResponseDto response = new OverallAnalysisResponseDto();
-    response.setScore(85.5);
-    response.setSpeakingRate(150.0);
-    response.setUtteranceVolume(70.0);
-    response.setAvgSilenceDuration(0.5);
-    response.setVocabularyAccuracy(90.0);
-    response.setFillerFrequency(2.0);
-    response.setRepetitionRatio(5.0);
+  OverallAnalysisResponseDto response = new OverallAnalysisResponseDto();
+  response.setScore(85.5);
+  response.setSpeakingRate(150.0);
+  response.setUtteranceVolume(70.0);
+  response.setAvgSilenceDuration(0.5);
+  response.setVocabularyAccuracy(90.0);
+  response.setFillerFrequency(2.0);
+  response.setRepetitionRatio(5.0);
 
     return response;
   }

@@ -131,7 +131,7 @@ public class User implements UserDetails {
 
   public void updateAvgScore(double newScore) {
     int totalEvaluations = this.audioMetadataList.size();
-    if (totalEvaluations == 0) {
+    if (totalEvaluations == 1) {
       this.avgScore = newScore;
     } else {
       this.avgScore = ((this.avgScore * (totalEvaluations - 1)) + newScore) / totalEvaluations;

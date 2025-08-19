@@ -27,6 +27,7 @@ public class AudioAnalysisService {
     for (AudioAnalysisStrategy strategy : strategies) {
       log.info("음성 분석을 시작합니다. 음성 분석 모델: {}", strategy.toString());
       AbstractOverallAnalysis feedback = strategy.evaluate(metadata, user);
+      log.info("AUDIO SCORE: {}", feedback.getScore());
       feedbacks.add(feedback);
     }
 
