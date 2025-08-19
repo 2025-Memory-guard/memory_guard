@@ -134,9 +134,10 @@ public class GuardService {
     }
 
     //피보호자 아이디로 검색
-    public Optional<User> getWard(String userId) {
+    public Optional<WardUserDto> getWard(String userId) {
         return userRepository.findByUserProfileUserId(userId)
-                .filter(user -> user.getRoles().contains("ROLE_USER"));
+                .filter(user -> user.getRoles().contains("ROLE_USER"))
+                .map(ward -> WardUserDto.fromEntity(ward, false));
     }
 
     public void sendGuardRequest(User guard, GuardRequestDto guardRequestDto) {

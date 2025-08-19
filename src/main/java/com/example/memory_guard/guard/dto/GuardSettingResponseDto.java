@@ -12,7 +12,7 @@ public class GuardSettingResponseDto {
     public static GuardSettingResponseDto fromEntity(User guard) {
         return GuardSettingResponseDto.builder()
                 .userName(guard.getUsername())
-                .primaryWardUserDto(WardUserDto.fromEntity(guard.getPrimaryWard()))
+                .primaryWardUserDto(WardUserDto.fromEntity(guard.getPrimaryWard(), true))
                 .build();
     }
 }
