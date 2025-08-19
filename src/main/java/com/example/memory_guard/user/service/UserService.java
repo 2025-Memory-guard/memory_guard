@@ -40,11 +40,11 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
   private final AudioService audioService;
 
-  public void signup(SignupRequestDto signupRequest) {
+  public void signup(SignupRequestDto signupRequest, String role) {
     isDupUser(signupRequest);
 
     User user = createUser(signupRequest);
-    setRole(user, "ROLE_USER");
+    setRole(user, role);
 
     userRepository.save(user);
   }
@@ -52,10 +52,10 @@ public class UserService {
   public void guardSignup(GuardSignupRequestDto signupRequest) {
     isDupUser(signupRequest);
 
-    User ward = isValidWardUser(signupRequest);
+    //User ward = isValidWardUser(signupRequest);
     User guardian = createUser(signupRequest);
 
-    guardian.addWard(ward);
+    //guardian.addWard(ward);
     setRole(guardian, "ROLE_GUARD");
     userRepository.save(guardian);
   }
