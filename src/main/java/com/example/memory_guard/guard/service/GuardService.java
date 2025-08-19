@@ -4,10 +4,13 @@ import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
 import com.example.memory_guard.guard.dto.*;
 import com.example.memory_guard.user.domain.GuardRequest;
+import com.example.memory_guard.user.domain.GuardUserLink;
+import com.example.memory_guard.user.domain.Status;
 import com.example.memory_guard.user.domain.User;
 import com.example.memory_guard.user.dto.GuardRequestDto;
 import com.example.memory_guard.user.dto.WardUserDto;
 import com.example.memory_guard.user.repository.GuardRequestRepository;
+import com.example.memory_guard.user.repository.GuardUserLinkRepository;
 import com.example.memory_guard.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ public class GuardService {
     private final AudioMetadataRepository audioMetadataRepository;
     private final UserRepository userRepository;
     private final GuardRequestRepository guardRequestRepository;
+    private final GuardUserLinkRepository guardUserLinkRepository;
 
     public GuardHomeResponseDto getHomeData(User user) {
         checkUser(user);
@@ -145,6 +149,35 @@ public class GuardService {
         guard.getSentRequests().add(guardRequest);
 
         guardRequestRepository.save(guardRequest);
+    }
+
+    public void updateRequestStatus(Long requestId, Status status) {
+        GuardRequest request = guardRequestRepository.findGuardRequestById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("요청을 찾을 수가 없습니다"));
+
+        if (request.getStatus() != Status.PENDING) {
+            throw new IllegalStateException("이미 처리된 요청입니다.");
+        }
+
+        User guard = request.getReceiver();
+        User ward = request.getRequester();
+
+        //요청이 거절되었을 떄
+        if (status == Status.REJECTED) {
+            guard.getReceivedRequests().remove(request);
+            ward.getSentRequests().remove(request);
+            guardRequestRepository.delete(request);
+        }
+
+        //요청 수락되었을 떄
+        if (status == Status.ACCEPTED) {
+            GuardUserLink guardUserLink = ward.addGuardian(guard);
+            guardUserLinkRepository.save(guardUserLink);
+
+            guard.getReceivedRequests().remove(request);
+            ward.getSentRequests().remove(request);
+            guardRequestRepository.delete(request);
+        }
     }
 
     private static void checkUser(User user) {

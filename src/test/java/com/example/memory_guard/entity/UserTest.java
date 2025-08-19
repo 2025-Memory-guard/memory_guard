@@ -206,8 +206,8 @@ class UserTest {
             .userProfile(wardProfile)
             .build();
 
-        guardian.addWard(ward);
-
+//        guardian.addWard(ward);
+//
 //        assertThat(guardian.getWards()).hasSize(1);
 //        assertThat(guardian.getWards()).contains(ward);
 

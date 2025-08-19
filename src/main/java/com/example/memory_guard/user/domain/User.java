@@ -52,10 +52,10 @@ public class User implements UserDetails {
   @JoinColumn(name = "primary_ward_id")
   private User primaryWard;
 
-  @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "requester")
   private List<GuardRequest> sentRequests = new ArrayList<>();
 
-  @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "receiver")
   private List<GuardRequest> receivedRequests = new ArrayList<>();
 
 
@@ -74,16 +74,18 @@ public class User implements UserDetails {
     this.roles.add(role);
   }
 
-  public void addWard(User ward){
+  public GuardUserLink addWard(User ward){
     GuardUserLink guardUserLink = new GuardUserLink(this, ward);
     this.wards.add(guardUserLink);
     ward.getGuardians().add(guardUserLink);
+    return guardUserLink;
   }
 
-  public void addGuardian(User guardian) {
-    GuardUserLink guardUserLink = new GuardUserLink(guardian, this);
+  public GuardUserLink addGuardian(User guard) {
+    GuardUserLink guardUserLink = new GuardUserLink(guard, this);
     this.guardians.add(guardUserLink);
-    guardian.getWards().add(guardUserLink);
+    guard.getWards().add(guardUserLink);
+    return guardUserLink;
   }
 
   public void setPrimaryWard(User ward) {
