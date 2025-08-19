@@ -10,9 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -34,5 +36,12 @@ public class UserSettingController {
             @AuthenticationPrincipal User ward
     ) {
         return ResponseEntity.ok(userSettingService.getManagement(ward));
+    }
+
+    @GetMapping("/search-guards")
+    public ResponseEntity<Optional<User>> getWard(
+            @RequestParam String userId
+    ) {
+        return ResponseEntity.ok(userSettingService.getGuard(userId));
     }
 }
