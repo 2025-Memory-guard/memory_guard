@@ -31,13 +31,13 @@ public class UserController {
 
   @PostMapping("/ward/signup")
   public ResponseEntity<String> signup(@RequestBody SignupRequestDto signupDto) {
-      userService.signup(signupDto);
+      userService.signup(signupDto, "ROLE_USER");
       return ResponseEntity.ok("회원가입이 완료되었습니다.");
   }
 
   @PostMapping("/guard/signup")
   public ResponseEntity<String> guardSignup(@RequestBody SignupRequestDto signupDto) {
-      userService.signup(signupDto);
+      userService.signup(signupDto, "ROLE_GUARD");
       return ResponseEntity.ok("보호자 회원가입이 완료되었습니다.");
   }
 

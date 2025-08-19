@@ -40,25 +40,25 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
   private final AudioService audioService;
 
-  public void signup(SignupRequestDto signupRequest) {
+  public void signup(SignupRequestDto signupRequest, String role) {
     isDupUser(signupRequest);
 
     User user = createUser(signupRequest);
-    setRole(user, "ROLE_USER");
+    setRole(user, role);
 
     userRepository.save(user);
   }
 
-  public void guardSignup(GuardSignupRequestDto signupRequest) {
-    isDupUser(signupRequest);
-
-    User ward = isValidWardUser(signupRequest);
-    User guardian = createUser(signupRequest);
-
-    guardian.addWard(ward);
-    setRole(guardian, "ROLE_GUARD");
-    userRepository.save(guardian);
-  }
+//  public void guardSignup(GuardSignupRequestDto signupRequest) {
+//    isDupUser(signupRequest);
+//
+//    User ward = isValidWardUser(signupRequest);
+//    User guardian = createUser(signupRequest);
+//
+//    guardian.addWard(ward);
+//    setRole(guardian, "ROLE_GUARD");
+//    userRepository.save(guardian);
+//  }
 
   public TokenDto login(String userId, String password) {
 
