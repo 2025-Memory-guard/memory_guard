@@ -80,7 +80,8 @@ public class UserSettingService {
 
         //요청 수락되었을 떄
         if (status == Status.ACCEPTED) {
-            GuardUserLink guardUserLink = ward.addGuardian(guard);
+            // 수락을 하면 User와 Guard둘다 설정이
+            GuardUserLink guardUserLink = guard.addWard(ward);
             guardUserLinkRepository.save(guardUserLink);
 
             ward.getSentRequests().remove(request);

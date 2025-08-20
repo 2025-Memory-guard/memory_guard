@@ -2,6 +2,10 @@ package com.example.memory_guard.guard.service;
 
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.repository.AudioMetadataRepository;
+import com.example.memory_guard.diary.domain.Diary;
+import com.example.memory_guard.diary.dto.DiaryInfoDto;
+import com.example.memory_guard.diary.repository.DiaryRepository;
+import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.guard.dto.*;
 import com.example.memory_guard.user.domain.GuardRequest;
 import com.example.memory_guard.user.domain.GuardUserLink;
@@ -34,18 +38,24 @@ public class GuardService {
     private final UserRepository userRepository;
     private final GuardRequestRepository guardRequestRepository;
     private final GuardUserLinkRepository guardUserLinkRepository;
+    private final DiaryRepository diaryRepository;
 
     public GuardHomeResponseDto getHomeData(User user) {
         User persistUser = userRepository
             .findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
 
         checkUser(persistUser);
-
-        //보호자 이름
         String guardianUserName = persistUser.getUserProfile().getUsername();
-
-        //ward
         User ward = persistUser.getPrimaryWard();
+
+        if (ward == null){
+            return GuardHomeResponseDto.builder()
+                .username(persistUser.getUserProfile().getUsername())
+                .build();
+        }
+
+
+
 
         //weeklyStamp 구하기
         LocalDate today = LocalDate.now();
@@ -64,14 +74,19 @@ public class GuardService {
         LocalDateTime startOfToday = today.atStartOfDay();         // 00:00:00
         LocalDateTime endOfToday = today.atTime(LocalTime.MAX);   // 23:59:59.999999999
 
-        List<AbstractAudioMetadata> todayRecord = audioMetadataRepository.findByUserAndCreatedAtBetween(ward, startOfToday, endOfToday);
+        //
+        List<Diary> wardDiaries = diaryRepository.findAllByAuthorIdOrderByCreatedAtDesc(ward.getId());
+
+        List<DiaryInfoDto> diaryInfos = wardDiaries.stream()
+            .map(DiaryInfoDto::fromEntity)
+            .collect(Collectors.toList());
 
         return GuardHomeResponseDto.builder()
                 .username(guardianUserName)
                 .weeklyStamps(weeklyStamps)
                 .consecutiveRecordingDays(ward.getConsecutiveRecordingDays())
                 .wardUsername(ward.getUserProfile().getUsername())
-                .todayRecord(todayRecord)
+                .diarys(diaryInfos)
                 .build();
     }
 
@@ -167,7 +182,7 @@ public class GuardService {
             .findById(guard.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
 
         checkUser(persistGuard);
-        User persistWard = userRepository.findUserById(guardRequestDto.getReceiverId())
+        User persistWard = userRepository.findByUserProfileUserId(guardRequestDto.getReceiverUserId())
                 .orElseThrow(() -> new IllegalArgumentException("요청 대상 피보호자를 찾을 수 없습니다."));
 
         GuardRequest guardRequest = GuardRequestDto.toEntity(persistGuard, persistWard);
@@ -197,7 +212,7 @@ public class GuardService {
 
         //요청 수락되었을 떄
         if (status == Status.ACCEPTED) {
-            GuardUserLink guardUserLink = ward.addGuardian(guard);
+            GuardUserLink guardUserLink = guard.addWard(ward);
             guardUserLinkRepository.save(guardUserLink);
 
             ward.getReceivedRequests().remove(request);

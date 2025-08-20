@@ -95,7 +95,7 @@ public class User implements UserDetails {
   public GuardUserLink addGuardian(User guard) {
     GuardUserLink guardUserLink = new GuardUserLink(guard, this);
     this.guardians.add(guardUserLink);
-    guard.getWards().add(guardUserLink);
+    guard.addWard(guardUserLink.getWard());
     return guardUserLink;
   }
 

@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
   Optional<Diary> findByAudioMetadataId(Long audioMetadataId);
   List<Diary> findByAuthorId(Long authorId);
+  List<Diary> findAllByAuthorIdOrderByCreatedAtDesc(Long authorId);
 }
