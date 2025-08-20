@@ -57,9 +57,9 @@ public class UserSettingService {
         User persistWard = userRepository
             .findById(ward.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
 
-        GuardRequest guardRequest = GuardRequestDto.toEntity(guard, ward);
-        persistWard.getReceivedRequests().add(guardRequest);
-        guard.getSentRequests().add(guardRequest);
+        GuardRequest guardRequest = GuardRequestDto.toEntity(ward, guard);
+        guard.getReceivedRequests().add(guardRequest);
+        persistWard.getSentRequests().add(guardRequest);
 
         guardRequestRepository.save(guardRequest);
     }
@@ -83,8 +83,8 @@ public class UserSettingService {
             GuardUserLink guardUserLink = ward.addGuardian(guard);
             guardUserLinkRepository.save(guardUserLink);
 
-            guard.getSentRequests().remove(request);
-            ward.getReceivedRequests().remove(request);
+            ward.getSentRequests().remove(request);
+            guard.getReceivedRequests().remove(request);
             guardRequestRepository.delete(request);
         }
     }

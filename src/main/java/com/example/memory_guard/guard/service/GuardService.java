@@ -13,6 +13,7 @@ import com.example.memory_guard.user.repository.GuardRequestRepository;
 import com.example.memory_guard.user.repository.GuardUserLinkRepository;
 import com.example.memory_guard.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GuardService {
 
     private final AudioMetadataRepository audioMetadataRepository;
@@ -131,12 +133,15 @@ public class GuardService {
                 .build();
     }
 
-    public GuardSettingResponseDto getSettings(User user) {
+    public List<GuardSettingResponseDto> getSettings(User user) {
         User persistUser = userRepository
             .findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
 
         checkUser(persistUser);
-        return GuardSettingResponseDto.fromEntity(persistUser);
+
+        return persistUser.getWards().stream()
+            .map(link -> GuardSettingResponseDto.fromEntity(link, persistUser))
+            .collect(Collectors.toList());
     }
 
     //현재 모든 피보호자 + 다른 피보호자에게 받은 요청 + 보호자가 보낸 요청 모두 보여주기
@@ -157,6 +162,7 @@ public class GuardService {
     }
 
     public void sendGuardRequest(User guard, GuardRequestDto guardRequestDto) {
+        log.info("guardRequestDto: {}", guardRequestDto);
         User persistGuard = userRepository
             .findById(guard.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
 
@@ -194,8 +200,8 @@ public class GuardService {
             GuardUserLink guardUserLink = ward.addGuardian(guard);
             guardUserLinkRepository.save(guardUserLink);
 
-            guard.getReceivedRequests().remove(request);
-            ward.getSentRequests().remove(request);
+            ward.getReceivedRequests().remove(request);
+            guard.getSentRequests().remove(request);
             guardRequestRepository.delete(request);
         }
     }

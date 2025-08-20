@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -51,7 +52,7 @@ public class GuardController {
     }
 
     @GetMapping("/setting")
-    public ResponseEntity<GuardSettingResponseDto> getSettings(
+    public ResponseEntity<List<GuardSettingResponseDto>> getSettings(
             @AuthenticationPrincipal User user
     ) {
         return ResponseEntity.ok(guardService.getSettings(user));

@@ -79,9 +79,16 @@ public class User implements UserDetails {
   }
 
   public GuardUserLink addWard(User ward){
+    boolean isFirstWard = this.getWards().isEmpty();
+
     GuardUserLink guardUserLink = new GuardUserLink(this, ward);
     this.wards.add(guardUserLink);
     ward.getGuardians().add(guardUserLink);
+
+    if (isFirstWard) {
+      this.setPrimaryWard(ward);
+    }
+
     return guardUserLink;
   }
 
