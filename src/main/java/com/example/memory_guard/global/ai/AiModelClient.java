@@ -116,33 +116,33 @@ public class AiModelClient {
 //        .build();
 //  }
 
-  public SpeakSentenceResponseDto speakSentenceProcess(MultipartFile audioFile, String sentence) throws IOException {
-    log.info("AI 서버로 따라말하기 비교 요청 더미데이터 반환.");
-
-    return SpeakSentenceResponseDto.builder().synchronization(80).build();
-  }
-
 //  public SpeakSentenceResponseDto speakSentenceProcess(MultipartFile audioFile, String sentence) throws IOException {
-//    String tempOutputPath = System.getProperty("java.io.tmpdir") + "/" + System.currentTimeMillis() + ".wav";
-//    File convertedWavFile = null;
+//    log.info("AI 서버로 따라말하기 비교 요청 더미데이터 반환.");
 //
-//    try {
-//      convertedWavFile = audioConversionUtils.convertToWav(audioFile, tempOutputPath);
-//      String fileName = convertedWavFile.getName();
-//      String base64AudioData = encodeToBase64(convertedWavFile);
-//
-//      log.info("AI 서버로 따라말하기 비교 요청을 보냅니다. fileName: {}, sentence: {}", fileName, sentence);
-//
-//      SpeakSentenceRequestDto requestDto = createSpeakSentenceRequestDto(base64AudioData, fileName, sentence);
-//
-//      return sendSpeakSentenceRequest("/audio/speak/sentence", requestDto, SpeakSentenceResponseDto.class);
-//
-//    } finally {
-//      if (convertedWavFile != null && convertedWavFile.exists()) {
-//        convertedWavFile.delete();
-//      }
-//    }
+//    return SpeakSentenceResponseDto.builder().synchronization(80).build();
 //  }
+
+  public SpeakSentenceResponseDto speakSentenceProcess(MultipartFile audioFile, String sentence) throws IOException {
+    String tempOutputPath = System.getProperty("java.io.tmpdir") + "/" + System.currentTimeMillis() + ".wav";
+    File convertedWavFile = null;
+
+    try {
+      convertedWavFile = audioConversionUtils.convertToWav(audioFile, tempOutputPath);
+      String fileName = convertedWavFile.getName();
+      String base64AudioData = encodeToBase64(convertedWavFile);
+
+      log.info("AI 서버로 따라말하기 비교 요청을 보냅니다. fileName: {}, sentence: {}", fileName, sentence);
+
+      SpeakSentenceRequestDto requestDto = createSpeakSentenceRequestDto(base64AudioData, fileName, sentence);
+
+      return sendSpeakSentenceRequest("/audio/speak/sentence", requestDto, SpeakSentenceResponseDto.class);
+
+    } finally {
+      if (convertedWavFile != null && convertedWavFile.exists()) {
+        convertedWavFile.delete();
+      }
+    }
+  }
 
 
   private <T> T sendHttpJsonRequest(String requestUrl, AudioAnalysisRequestDto requestDto, Class<T> responseType) {
