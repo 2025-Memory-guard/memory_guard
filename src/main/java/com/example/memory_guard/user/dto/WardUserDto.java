@@ -2,9 +2,11 @@ package com.example.memory_guard.user.dto;
 
 import com.example.memory_guard.user.domain.GuardUserLink;
 import com.example.memory_guard.user.domain.User;
+import lombok.Getter;
 import lombok.Setter;
 
 @Setter
+@Getter
 public class WardUserDto {
     private Long id;
     private String userId;

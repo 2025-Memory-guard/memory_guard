@@ -25,31 +25,40 @@ public class UserSettingService {
     private final GuardUserLinkRepository guardUserLinkRepository;
 
     public List<GuardUserDto> getAllGuards(User ward) {
-        return ward.getGuardians().stream()
+        User persistUser = userRepository
+            .findById(ward.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
+        return persistUser.getGuardians().stream()
                 .map(GuardUserDto::fromEntity)
                 .toList();
     }
 
     public GuardManagementResponseDto getManagement(User ward) {
+        User persistUser = userRepository
+            .findById(ward.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
+
         return GuardManagementResponseDto.fromEntity(
-                ward.getGuardians(),
-                ward.getReceivedRequests(),
-                ward.getSentRequests()
+                persistUser.getGuardians(),
+                persistUser.getReceivedRequests(),
+                persistUser.getSentRequests()
         );
     }
 
     public Optional<GuardUserDto> getGuard(String userId) {
         return userRepository.findByUserProfileUserId(userId)
-                .filter(user -> user.getRoles().contains("ROLE_GUARD"))
-                .map(GuardUserDto::fromEntity);
+            .filter(user -> user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_GUARD")))
+            .map(GuardUserDto::fromEntity);
     }
 
     public void sendGuardRequest(User ward, GuardRequestDto guardRequestDto) {
         User guard = userRepository.findByUserProfileUserId(guardRequestDto.getReceiverUserId())
                 .orElseThrow(() -> new IllegalArgumentException("요청 대상 보호자를 찾을 수 없습니다."));
 
+        User persistWard = userRepository
+            .findById(ward.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
+
         GuardRequest guardRequest = GuardRequestDto.toEntity(guard, ward);
-        ward.getReceivedRequests().add(guardRequest);
+        persistWard.getReceivedRequests().add(guardRequest);
         guard.getSentRequests().add(guardRequest);
 
         guardRequestRepository.save(guardRequest);

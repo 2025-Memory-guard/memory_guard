@@ -3,10 +3,12 @@ package com.example.memory_guard.user.dto;
 import com.example.memory_guard.user.domain.GuardRequest;
 import com.example.memory_guard.user.domain.GuardUserLink;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.util.List;
 
 @Builder
+@Getter
 public class GuardManagementResponseDto {
     //현재 연결된 모든 보호자
     private List<GuardUserDto> allGuards;

@@ -34,13 +34,16 @@ public class GuardService {
     private final GuardUserLinkRepository guardUserLinkRepository;
 
     public GuardHomeResponseDto getHomeData(User user) {
-        checkUser(user);
+        User persistUser = userRepository
+            .findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
+
+        checkUser(persistUser);
 
         //보호자 이름
-        String guardianUserName = user.getUserProfile().getUsername();
+        String guardianUserName = persistUser.getUserProfile().getUsername();
 
         //ward
-        User ward = user.getPrimaryWard();
+        User ward = persistUser.getPrimaryWard();
 
         //weeklyStamp 구하기
         LocalDate today = LocalDate.now();
@@ -71,9 +74,12 @@ public class GuardService {
     }
 
     public GuardReportResponseDto getReport(User user) {
-        checkUser(user);
+        User persistUser = userRepository
+            .findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
 
-        User ward = user.getPrimaryWard();
+        checkUser(persistUser);
+
+        User ward = persistUser.getPrimaryWard();
 
         //이번 주 출석횟수 구하기
         LocalDate today = LocalDate.now();
@@ -94,9 +100,12 @@ public class GuardService {
     }
 
     public GuardCalendarResponseDto getCalendar(User user) {
-        checkUser(user);
+        User persistUser = userRepository
+            .findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
 
-        User ward = user.getPrimaryWard();
+        checkUser(persistUser);
+
+        User ward = persistUser.getPrimaryWard();
 
         //이번 주 출석횟수 구하기
         LocalDate today = LocalDate.now();
@@ -123,31 +132,41 @@ public class GuardService {
     }
 
     public GuardSettingResponseDto getSettings(User user) {
-        checkUser(user);
-        return GuardSettingResponseDto.fromEntity(user);
+        User persistUser = userRepository
+            .findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
+
+        checkUser(persistUser);
+        return GuardSettingResponseDto.fromEntity(persistUser);
     }
 
     //현재 모든 피보호자 + 다른 피보호자에게 받은 요청 + 보호자가 보낸 요청 모두 보여주기
     public GuardManagementResponseDto getManagement(User user) {
-        checkUser(user);
-        return GuardManagementResponseDto.fromEntity(user.getWards(), user.getReceivedRequests(), user.getSentRequests());
+        User persistUser = userRepository
+            .findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
+
+        checkUser(persistUser);
+        return GuardManagementResponseDto.fromEntity(persistUser.getWards(), persistUser.getReceivedRequests(), persistUser.getSentRequests());
     }
 
     //피보호자 아이디로 검색
     public Optional<WardUserDto> getWard(String userId) {
         return userRepository.findByUserProfileUserId(userId)
-                .filter(user -> user.getRoles().contains("ROLE_USER"))
+            .filter(user -> user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ROLE_USER")))
                 .map(ward -> WardUserDto.fromEntity(ward, false));
     }
 
     public void sendGuardRequest(User guard, GuardRequestDto guardRequestDto) {
-        checkUser(guard);
-        User ward = userRepository.findUserById(guardRequestDto.getReceiverId())
+        User persistGuard = userRepository
+            .findById(guard.getId()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
+
+        checkUser(persistGuard);
+        User persistWard = userRepository.findUserById(guardRequestDto.getReceiverId())
                 .orElseThrow(() -> new IllegalArgumentException("요청 대상 피보호자를 찾을 수 없습니다."));
 
-        GuardRequest guardRequest = GuardRequestDto.toEntity(guard, ward);
-        ward.getReceivedRequests().add(guardRequest);
-        guard.getSentRequests().add(guardRequest);
+        GuardRequest guardRequest = GuardRequestDto.toEntity(persistGuard, persistWard);
+        persistWard.getReceivedRequests().add(guardRequest);
+        persistGuard.getSentRequests().add(guardRequest);
 
         guardRequestRepository.save(guardRequest);
     }

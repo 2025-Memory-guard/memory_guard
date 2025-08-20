@@ -1,10 +1,6 @@
 package com.example.memory_guard.user.controller;
 
-import com.example.memory_guard.user.dto.LoginResponseDto;
-import com.example.memory_guard.user.dto.LoginRequestDto;
-import com.example.memory_guard.user.dto.SignupRequestDto;
-import com.example.memory_guard.user.dto.GuardSignupRequestDto;
-import com.example.memory_guard.user.dto.WardHomeResponseDto;
+import com.example.memory_guard.user.dto.*;
 import com.example.memory_guard.global.auth.dto.TokenDto;
 import com.example.memory_guard.user.service.UserService;
 import com.example.memory_guard.user.domain.User;
@@ -96,6 +92,12 @@ public class UserController {
   public ResponseEntity<WardHomeResponseDto> wardHome(@AuthenticationPrincipal User user) {
     WardHomeResponseDto response = userService.getWardHomeData(user);
     return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/{userId}/exists")
+  public ResponseEntity<UserExistResponseDto> existUser(@PathVariable String userId){
+    boolean exist = userService.existUserId(userId);
+    return ResponseEntity.ok(new UserExistResponseDto(exist));
   }
 
   @GetMapping("/home/user")

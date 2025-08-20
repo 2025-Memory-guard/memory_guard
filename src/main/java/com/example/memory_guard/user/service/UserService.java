@@ -196,4 +196,8 @@ public class UserService {
       throw new InvalidRequestException("이미 존재하는 사용자명입니다.");
     }
   }
+
+  public boolean existUserId(String userId) {
+    return userRepository.existsByUserProfileUserId(userId);
+  }
 }
