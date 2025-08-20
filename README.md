@@ -32,7 +32,8 @@ Memory Guard는 **'기록 → 분석/교정 → 전송 → 인지 → 반응'** 
 
 ## 시스템 아키텍처
 
-![KakaoTalk_20250819_100211380.png](attachment:13e3cf30-ddcf-4930-8473-1c2bb107dacf:KakaoTalk_20250819_100211380.png)
+<img width="1210" height="660" alt="KakaoTalk_20250819_100211380" src="https://github.com/user-attachments/assets/19bf2c92-34d7-4c5a-8ead-095dd12dd32c" />
+
 
 
 **주요 기술 스택:**
