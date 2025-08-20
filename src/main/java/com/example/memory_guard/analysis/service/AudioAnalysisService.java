@@ -20,6 +20,10 @@ public class AudioAnalysisService {
   private final List<AudioAnalysisStrategy> strategies;
   private final OverallAnalysisRepository feedbackRepository;
 
+  public List<AbstractOverallAnalysis> existEvaluate(AbstractAudioMetadata metadata){
+    return feedbackRepository.findByAudioMetadataId(metadata.getId());
+  }
+
   public List<AbstractOverallAnalysis> evaluate(AbstractAudioMetadata metadata, User user) throws IOException {
     File audioFile = metadata.getFile();
     List<AbstractOverallAnalysis> feedbacks = new ArrayList<>();

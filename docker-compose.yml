@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: junan01/memory_guard:1.4
+    image: junan01/memory_guard:2.1
     container_name: memory-guard-app
     ports:
       - "80:8080"
