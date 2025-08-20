@@ -1,83 +1,92 @@
-## DB ERD
-https://www.erdcloud.com/d/SJiLvMtFndTPs4hyX
+# Memory Guard: 음성 일기로 시작하는 인지 건강 관리 솔루션
 
+**"당신의 목소리로 소중한 기억을 지킵니다."**
 
-## 공유 할 부분 
+Memory Guard는 사용자의 음성 일기 기록과 발화 패턴을 AI로 분석하여 치매 발병 전 단계인 **경도인지장애(MCI)**를 조기에 발견하고, 예방적 관리를 돕는 혁신적인 모바일 헬스케어 서비스입니다.
 
-### **1.  API 에러 핸들링 컨벤션**
+<br>
 
- `GlobalExceptionHandler`가 설정되어 있어, 컨트롤러에서 발생하는 대부분의 예외를 일관된 형식으로 처리합니다.
+## 프로젝트 소개
 
--   **이렇게 해주세요 (Do) 👍**
-    -   컨트롤러에서는 `try-catch` 문을 사용하지 마세요.
-    -   서비스(Service) 계층에서 비즈니스 로직 검증에 실패했을 경우, 상황에 맞는 예외를 `throw` 해주세요. 핸들러가 알아서 잡아 HTTP 상태 코드와 표준 에러 메시지를 생성합니다.
+나이가 들수록 깜빡하는 일이 잦아지시나요? 혹은 멀리 계신 부모님의 건강이 걱정되시나요?
 
-    **[Before 👎]**
-    ```java
-    // UserController.java
-    @PostMapping("/user/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginDto) {
-        try {
-            TokenDto tokenInfo = userService.login(loginDto.getUserId(), loginDto.getPassword());
-            // ... 생략 ...
-            return ResponseEntity.ok(loginResponseDto);
-        } catch (AuthenticationException e) {
-            ErrorResponse response = new ErrorResponse("AUTH_FAILED", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        }
-    }
-    ```
-    **[After 👍]**
-    ```java
-    // UserController.java
-    @PostMapping("/user/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginDto) {
-        // userService.login 내부에서 예외가 발생하면 GlobalExceptionHandler가 처리합니다.
-        TokenDto tokenInfo = userService.login(loginDto.getUserId(), loginDto.getPassword());
-        // ... 생략 ...
-        return ResponseEntity.ok(loginResponseDto);
-    }
-    ```
+Memory Guard는 간단한 음성 일기 기록만으로 사용자의 언어 인지 기능을 정밀하게 분석합니다. AI 기술을 통해 발화 속도, 어휘 다양성, 문장 구조 등의 미세한 변화를 감지하고, 인지 건강 상태에 대한 객관적인 리포트를 제공합니다. 이를 통해 사용자와 보호자는 잠재적인 위험 신호를 조기에 파악하고 전문적인 관리를 시작할 수 있습니다.
 
--   **새로운 예외 추가가 필요하다면?**
-    -   만약 처리해야 할 새로운 종류의 예외가 있다면 `GlobalExceptionHandler.java` 파일에 `@ExceptionHandler`를 추가하여 등록해주세요.
+우리는 기술을 통해 **'기록'**이 **'예방'**이 되는 경험을 제공하고자 합니다.
 
-### ** JWT 인증/인가 테스트 방법**
+<br>
 
-로컬에서 개발 및 테스트의 편의를 위해 현재는 모든 API 요청이 허용된 상태입니다. 실제 JWT 인증/인가 로직을 테스트하려면 간단한 주석 해제가 필요합니다.
+## 서비스의 핵심 원리
 
--   **파일 위치**: `src/main/java/com/example/memory_guard/global/config/SecurityConfig.java`
--   **활성화 방법**: 아래 코드 블록의 주석을 제거하고, 그 아래의 `requestMatchers("/**").permitAll()` 부분을 주석 처리하거나 삭제해 주세요.
+Memory Guard는 **'기록 → 분석/교정 → 전송 → 인지 → 반응'** 이라는 5단계의 유기적인 사이클을 통해 작동합니다.
 
-    ```java
-    // SecurityConfig.java
-    
-    // 이 부분의 주석을 해제하세요!
-    .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/", "/user/login", "/guard/login", "/token/reissue").permitAll()
-        .requestMatchers("/api/ward/**").hasRole("USER") // 피보호자 API는 ROLE_USER 필요
-        .requestMatchers("/api/guard/**").hasRole("GUARD") // 보호자 API는 ROLE_GUARD 필요
-        .anyRequest().authenticated()
-    )
-    /*
-    // 이 부분은 주석 처리 또는 삭제하세요!
-    .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/**").permitAll()
-        .anyRequest().authenticated()
-    )
-    */
-    ```
--   **참고**: 활성화 후 API를 테스트할 때는 Postman 등의 클라이언트에서 **`Authorization` 헤더에 `Bearer {AccessToken}`**을 포함하여 요청해야 합니다.
+1.  **기록 (사용자)**: 사용자는 매일의 생각이나 감정을 음성으로 편안하게 이야기하며 일기를 남깁니다.
+2.  **분석/교정 (AI)**: 시스템은 녹음된 음성을 텍스트로 변환하고, 다각도로 발화 패턴을 분석합니다.
+    *   **인지 기능 분석**: 발화 속도, 침묵 구간, 단어 반복률 등을 분석하여 치매 위험도를 예측합니다.
+    *   **언어 습관 교정**: Google Gemini AI를 활용하여 어휘 다양성, 시제 일치 등 언어적 습관에 대한 피드백을 제공합니다.
+3.  **전송 (시스템)**: 분석된 리포트와 AI가 요약한 감성 일기를 사용자와 연결된 보호자에게 안전하게 전송합니다.
+4.  **인지 (보호자)**: 보호자는 대시보드를 통해 사용자의 녹음 현황, 분석 리포트, 일기 내용을 확인하며 인지 건강 상태의 변화를 지속적으로 모니터링합니다.
+5.  **반응 (사용자 & 보호자)**: 분석 결과를 바탕으로 사용자는 자신의 상태를 객관적으로 인지하고, 보호자는 시의적절한 격려와 지지를 보내며 긍정적인 상호작용을 이어갑니다.
 
-### ** 초기 데이터 안내**
+<br>
 
--   **피보호자 (ROLE_USER) 계정**
-    -   **ID**: `user1`
-    -   **Password**: `user1`
+## 시스템 아키텍처
 
--   **보호자 (ROLE_GUARD) 계정**
-    -   **ID**: `guard1`
-    -   **Password**: `guard1`
-    -   **참고**: `guard1` 계정은 `user1` 계정과 자동으로 연결(피보호자-보호자 관계)되어 있습니다.
+```
+![KakaoTalk_20250819_100211380.png](attachment:13e3cf30-ddcf-4930-8473-1c2bb107dacf:KakaoTalk_20250819_100211380.png)
+```
 
----
+**주요 기술 스택:**
+*   **Backend**: `Java 17`, `Spring Boot`, `Spring Security`, `JPA (Hibernate)`
+*   **Database**: `MySQL`
+*   **AI & ML**: `Google Gemini API`, `자체 음성 분석 모델 (Python/Flask - 외부 연동)`
+*   **Infrastructure**: `Docker`, `AWS/GCP (배포)`
+*   **Others**: `FFmpeg`, `JWT`
+
+<br>
+
+## 데이터베이스 ERD
+
+```
+<img width="1550" height="587" alt="image" src="https://github.com/user-attachments/assets/8e0e2456-a43c-4d98-9cc2-f6ef278cf59e" />
+
+```
+
+<br>
+
+## ✨ 주요 기능
+
+Memory Guard는 사용자인 **'기록 동행자'**와 보호자인 **'돌봄 동행자'**를 위한 맞춤형 기능을 제공합니다.
+
+#### 👨‍🦳 기록 동행자 (사용자)
+1.  **AI 코칭 음성 일기**: 오늘의 질문에 답하며 간편하게 음성 일기를 기록하고 저장합니다. 연속 기록일 기능으로 꾸준한 참여를 유도합니다.
+2.  **종합 인지 건강 리포트**: 치매 위험도, 발화 속도, 어휘 정확도 등 7가지 지표에 대한 상세 분석 결과를 확인하고 건강 변화를 추적합니다.
+3.  **1:1 언어 습관 피드백**: AI가 나의 말하기 습관(어휘, 시제 등)을 분석하고 개선을 위한 따뜻한 조언을 제공합니다.
+
+#### 👩‍⚕️ 돌봄 동행자 (보호자)
+1.  **실시간 모니터링 대시보드**: 연결된 피보호자의 주간 녹음 현황, 연속 기록일, AI 요약 일기 등을 한눈에 파악합니다.
+2.  **상세 분석 리포트 조회**: 피보호자의 최신 음성 기록에 대한 종합 분석 리포트를 확인하여 인지 건강 상태를 객관적으로 파악하고 소통의 자료로 활용합니다.
+
+<br>
+
+## 💡 기대 효과
+
+1.  **조기 예방 및 발견**: 경도인지장애를 조기에 발견하고 관리를 시작함으로써 중증 치매로의 진행을 늦추고, 독립적인 생활 기간을 연장할 수 있습니다.
+2.  **보호자의 삶의 질 개선**: 시공간 제약 없이 모바일로 피보호자의 상태를 모니터링하고 간접적인 케어가 가능해져 보호자의 심리적, 신체적 부담을 줄여줍니다.
+
+<br>
+
+## 한계점 및 향후 발전 방향
+
+#### 한계점
+1.  **AI 모델 학습 데이터셋**: 현재 AI 모델은 영어기반 치매진단 데이터셋을 기반으로 학습되었습니다.
+2.  **표준어 중심의 음성 인식**: 현재 음성 인식 모델은 표준어 발화에 최적화되어 있어, 강한 사투리를 사용하거나 발음이 부정확할 경우 분석 정확도가 저하될 수 있습니다.
+
+#### 향후 개선 및 확장 계획
+1.  **동기부여 요소 추가**: 꾸준한 사용을 유도하기 위해 뱃지, 포인트 등 게임화(Gamification) 요소를 도입합니다.
+2.  **의료 기관 연계를 통한 신뢰성 확보**: 공신력 있는 의료 기관의 인증을 받거나, 분석 결과를 바탕으로 전문가 상담을 연계하는 기능을 추가하여 서비스의 신뢰도를 높입니다.
+3.  **보호자 맞춤형 콘텐츠 제공**: 피보호자와의 효과적인 소통 방법, 돌봄 노하우 등 보호자를 위한 유용한 정보 콘텐츠를 제공합니다.
+4.  **개인화된 변화 추이 분석**: 사용자의 과거 데이터를 누적하여 발화 패턴의 '변화 추이'를 시각화하고, 미세한 인지 능력 저하 신호를 조기에 경고합니다.
+5.  **커뮤니티 기능 도입**: 비슷한 상황의 사용자들이 익명으로 소통하며 정서적 지지를 나눌 수 있는 커뮤니티를 구축합니다.
+6.  **B2B/B2G 모델 확장**: 요양원, 보건소, 지자체 등 기관을 대상으로 소속 노인들의 상태를 통합 관리하는 B2B/B2G 서비스로 확장합니다.
+7.  **적용 분야 확대**: 치매뿐만 아니라 우울증, 파킨슨병 등 음성 패턴에 변화를 유발하는 다른 질환의 모니터링 서비스로 확장합니다.
