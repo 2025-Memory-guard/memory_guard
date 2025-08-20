@@ -32,9 +32,8 @@ Memory Guard는 **'기록 → 분석/교정 → 전송 → 인지 → 반응'** 
 
 ## 시스템 아키텍처
 
-```
 ![KakaoTalk_20250819_100211380.png](attachment:13e3cf30-ddcf-4930-8473-1c2bb107dacf:KakaoTalk_20250819_100211380.png)
-```
+
 
 **주요 기술 스택:**
 *   **Backend**: `Java 17`, `Spring Boot`, `Spring Security`, `JPA (Hibernate)`
@@ -47,10 +46,7 @@ Memory Guard는 **'기록 → 분석/교정 → 전송 → 인지 → 반응'** 
 
 ## 데이터베이스 ERD
 
-```
 <img width="1550" height="587" alt="image" src="https://github.com/user-attachments/assets/8e0e2456-a43c-4d98-9cc2-f6ef278cf59e" />
-
-```
 
 <br>
 
