@@ -1,5 +1,6 @@
 package com.example.memory_guard.user.service;
 
+import com.example.memory_guard.diary.repository.DiaryRepository;
 import com.example.memory_guard.global.exception.custom.AuthenticationException;
 import com.example.memory_guard.global.exception.custom.InvalidRequestException;
 import com.example.memory_guard.user.domain.UserProfile;
@@ -28,6 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +46,7 @@ public class UserService {
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
   private final AudioService audioService;
+  private final DiaryRepository diaryRepository;
 
   public void signup(SignupRequestDto signupRequest, String role) {
     isDupUser(signupRequest);
@@ -106,13 +111,21 @@ public class UserService {
   }
 
   @Transactional(readOnly = true)
-  public WardHomeResponseDto getWardHomeData(User user) {
+  public WardHomeResponseDto getWardHomeData(User user,  LocalDate date) {
     User persistentUser = userRepository.findById(user.getId())
-        .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + user.getId()));
+        .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다."));
+
+    LocalDate targetDate = (date == null) ? LocalDate.now() : date;
+
+    log.info("TargetDate: {}", targetDate);
 
     AudioStampResponseDto audioStamps = audioService.getAudioStamps(persistentUser);
 
-    List<DiaryAudioInfoDto> diaryList = persistentUser.getDiaries().stream()
+    LocalDateTime start = targetDate.atStartOfDay();
+    LocalDateTime end = targetDate.plusDays(1).atStartOfDay();
+    List<Diary> diariesForDate = diaryRepository.findAllByAuthorIdAndCreatedAtToday(persistentUser.getId(), start, end);
+
+    List<DiaryAudioInfoDto> diaryList = diariesForDate.stream()
         .map(this::convertToDiaryAudioInfoDto)
         .sorted(Comparator.comparing(DiaryAudioInfoDto::getCreatedAt).reversed())
         .collect(Collectors.toList());

@@ -6,6 +6,7 @@ import com.example.memory_guard.user.dto.*;
 import com.example.memory_guard.global.auth.dto.TokenDto;
 import com.example.memory_guard.user.service.UserService;
 import com.example.memory_guard.user.domain.User;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @Slf4j
 @RestController
@@ -92,8 +95,10 @@ public class UserController {
   }
 
   @GetMapping("/api/ward/home")
-  public ResponseEntity<WardHomeResponseDto> wardHome(@AuthenticationPrincipal User user) {
-    WardHomeResponseDto response = userService.getWardHomeData(user);
+  public ResponseEntity<WardHomeResponseDto> wardHome(@AuthenticationPrincipal User user,
+                                                      @RequestParam(name = "date", required = false)
+                                                      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    WardHomeResponseDto response = userService.getWardHomeData(user, date);
     return ResponseEntity.ok(response);
   }
 
