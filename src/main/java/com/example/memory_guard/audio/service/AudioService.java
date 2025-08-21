@@ -17,6 +17,7 @@ import com.example.memory_guard.audio.repository.AudioMetadataRepository;
 import com.example.memory_guard.audio.repository.AudioTranscriptionRepository;
 import com.example.memory_guard.analysis.repository.OverallAnalysisRepository;
 import com.example.memory_guard.diary.domain.Diary;
+import com.example.memory_guard.diary.dto.WardCalendarResponseDto;
 import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.global.ai.AiModelClient;
 import com.example.memory_guard.user.domain.User;
@@ -167,6 +168,41 @@ public class AudioService {
         });
   }
 
+  @Transactional(readOnly = true)
+  public WardCalendarResponseDto getMonthlyAudioDates(User guard) {
+    User persistGuard = userRepository.findById(guard.getId())
+        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+
+    User ward = persistGuard.getPrimaryWard();
+    if (ward == null) {
+      return WardCalendarResponseDto.builder().build();
+    }
+
+
+
+    LocalDate today = LocalDate.now();
+    LocalDateTime startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
+    LocalDateTime endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth()).atTime(LocalTime.MAX);
+
+    List<AbstractAudioMetadata> monthlyAudios = audioMetadataRepository.findByUserAndCreatedAtBetween(ward, startOfMonth, endOfMonth);
+
+    List<LocalDate> recordingDates = monthlyAudios.stream()
+        .map(audio -> audio.getCreatedAt().toLocalDate())
+        .distinct()
+        .toList();
+
+    List<LocalDate> speechDates = monthlyAudios.stream()
+        .filter(AbstractAudioMetadata::isSpeechCompleted)
+        .map(audio -> audio.getCreatedAt().toLocalDate())
+        .distinct()
+        .toList();
+
+    return WardCalendarResponseDto.builder()
+        .recordingDates(recordingDates)
+        .speechDates(speechDates)
+        .build();
+  }
+
   public AudioAnalysisReport audioEvaluateWardReport(AbstractAudioMetadata metadata, User user){
     List<AbstractOverallAnalysis> feedbacks = evaluationFeedbackRepository.findByAudioMetadataId(metadata.getId());
 
@@ -195,6 +231,14 @@ public class AudioService {
 
   public SpeakSentenceResponseDto speakSentenceProcess(MultipartFile audioFile, String sentence) throws IOException {
     return aiModelClient.speakSentenceProcess(audioFile, sentence);
+  }
+
+  @Transactional
+  public void completeSpeech(Long audioId) {
+    AbstractAudioMetadata audio = audioMetadataRepository.findById(audioId)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 오디오 데이터입니다. ID: " + audioId));
+
+    audio.completeSpeech();
   }
 
   private static AudioAnalysisReport createAudioEvaluationWardReport(User user, DementiaAnalysis dementiaFeedback, int attendanceRate) {

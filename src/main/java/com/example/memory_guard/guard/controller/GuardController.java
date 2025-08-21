@@ -3,6 +3,7 @@ package com.example.memory_guard.guard.controller;
 import com.example.memory_guard.audio.domain.AbstractAudioMetadata;
 import com.example.memory_guard.audio.dto.response.AudioAnalysisReport;
 import com.example.memory_guard.audio.service.AudioService;
+import com.example.memory_guard.diary.dto.WardCalendarResponseDto;
 import com.example.memory_guard.guard.dto.*;
 import com.example.memory_guard.guard.service.GuardService;
 import com.example.memory_guard.user.domain.Status;
@@ -44,11 +45,16 @@ public class GuardController {
         return ResponseEntity.ok(guardService.getReport(user));
     }
 
+//    @GetMapping("/calendar")
+//    public ResponseEntity<GuardCalendarResponseDto> getCalendar(
+//            @AuthenticationPrincipal User user
+//    ) {
+//        return ResponseEntity.ok(guardService.getCalendar(user));
+//    }
     @GetMapping("/calendar")
-    public ResponseEntity<GuardCalendarResponseDto> getCalendar(
-            @AuthenticationPrincipal User user
-    ) {
-        return ResponseEntity.ok(guardService.getCalendar(user));
+    public ResponseEntity<WardCalendarResponseDto> getCalendar(@AuthenticationPrincipal User user) {
+        WardCalendarResponseDto response = audioService.getMonthlyAudioDates(user);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/setting")
@@ -80,6 +86,7 @@ public class GuardController {
         guardService.sendGuardRequest(user, guardRequestDto);
         return ResponseEntity.ok("피보호자에게 요청이 전송되었습니다.");
     }
+
 
     //비보호자가 보낸 연결 요청 수락
     @PatchMapping("/{requestId}/status")

@@ -10,6 +10,7 @@ import com.example.memory_guard.audio.service.AudioService;
 import com.example.memory_guard.analysis.service.SentenceAnalysisService;
 import com.example.memory_guard.analysis.service.FinalFeedbackService;
 import com.example.memory_guard.diary.domain.Diary;
+import com.example.memory_guard.diary.dto.WardCalendarResponseDto;
 import com.example.memory_guard.diary.service.DiaryService;
 import com.example.memory_guard.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -106,7 +108,6 @@ public class AudioController {
         .body(builder.build());
   }
 
-
   // 테스트 확인
   @GetMapping("/sentence/feedback/{audioId}")
   public ResponseEntity<Object> getSentenceFeedback(@PathVariable Long audioId, @AuthenticationPrincipal User user) throws IOException {
@@ -154,6 +155,12 @@ public class AudioController {
     SpeakSentenceResponseDto result = audioService.speakSentenceProcess(audioFile, sentence);
     
     return ResponseEntity.ok(result);
+  }
+
+  @PatchMapping("/{audioId}/complete-speech")
+  public ResponseEntity<Void> completeSpeech(@PathVariable Long audioId, @AuthenticationPrincipal User user) {
+    audioService.completeSpeech(audioId);
+    return ResponseEntity.ok().build();
   }
 
   private static AudioTranscriptionResponseDto createAudioTranscriptionResponseDto(AudioTranscription audioTranscription) {

@@ -34,6 +34,7 @@ public class Diary {
   @CreatedDate
   private LocalDateTime createdAt;
 
+
   @Builder
   public Diary(String title, String body, User author, AbstractAudioMetadata audioMetadata){
     this.title = title;

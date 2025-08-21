@@ -42,6 +42,9 @@
     @Column(name = "duration")
     private Long duration;
 
+    @Column(name = "speech_completed", nullable = false)
+    private boolean speechCompleted = false;
+
     @OneToMany(mappedBy = "audioMetadata")
     private List<AbstractOverallAnalysis> evaluationFeedbacks;
 
@@ -61,12 +64,17 @@
       this.originalFilename = originalFilename;
       this.fileSize = fileSize;
       this.duration = duration;
+      this.speechCompleted = false;
     }
 
     public void updateFileInfo(String originalFilename, Long fileSize, Long duration) {
       this.originalFilename = originalFilename;
       this.fileSize = fileSize;
       this.duration = duration;
+    }
+
+    public void completeSpeech() {
+      this.speechCompleted = true;
     }
 
     public abstract File getFile() throws IOException;
