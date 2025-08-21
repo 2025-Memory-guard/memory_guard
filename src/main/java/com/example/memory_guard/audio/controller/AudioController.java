@@ -87,6 +87,7 @@ public class AudioController {
     AbstractAudioMetadata metadata = audioService.getAudioMetadata(audioId);
 
     File audioFile = metadata.getFile();
+    log.info("음성일기를 가져옵니다.");
     log.info("오디오가 위치한 경로: {}", audioFile.getAbsolutePath());
     AudioTranscription audioTranscription = audioService.getAudioTranscription(audioId);
     Diary diary = diaryService.createAudioDiary(metadata, user);

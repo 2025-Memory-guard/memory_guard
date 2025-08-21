@@ -143,19 +143,27 @@ public class AudioService {
 
   @Transactional
   public void audioEvaluate(AbstractAudioMetadata metadata, User user) throws IOException {
+    User persistentUser = userRepository.findById(user.getId())
+        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
     List<AbstractOverallAnalysis> audioFeedbacks = audioEvaluationService.existEvaluate(metadata);
+    boolean isExist;
 
     if (audioFeedbacks.isEmpty()){
       log.info("기존의 분석결과가 없습니다. 분석을 시작합니다.");
+      isExist = false;
       audioFeedbacks = audioEvaluationService.evaluate(metadata, user);
+    } else {
+      isExist = true;
     }
     audioFeedbacks.stream()
         .filter(feedback -> feedback.getFeedbackType() == FeedbackType.DEMENTIA)
         .findFirst()
         .ifPresent(feedback -> {
-          User persistentUser = userRepository.findById(user.getId())
-              .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-          persistentUser.updateAvgScore(feedback.getScore());
+          if (!isExist) {
+            log.info("업데이트 점수");
+            persistentUser.updateAvgScore(feedback.getScore());
+          }
         });
   }
 
@@ -165,7 +173,6 @@ public class AudioService {
     User persistUser = userRepository.findById(user.getId())
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 User입니다."));
 
-    
     DementiaAnalysis dementiaFeedback = feedbacks.stream()
         .filter(feedback -> feedback.getFeedbackType() == FeedbackType.DEMENTIA)
         .map(feedback -> (DementiaAnalysis) feedback)

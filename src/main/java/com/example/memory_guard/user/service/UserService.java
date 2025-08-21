@@ -18,6 +18,7 @@ import com.example.memory_guard.global.auth.utils.JwtProvider;
 import com.example.memory_guard.user.repository.UserRepository;
 import com.example.memory_guard.user.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,11 +28,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
   private final JwtProvider jwtProvider;
@@ -111,7 +114,10 @@ public class UserService {
 
     List<DiaryAudioInfoDto> diaryList = persistentUser.getDiaries().stream()
         .map(this::convertToDiaryAudioInfoDto)
+        .sorted(Comparator.comparing(DiaryAudioInfoDto::getCreatedAt).reversed())
         .collect(Collectors.toList());
+
+    log.info("정렬된 diaryList: {}", diaryList);
 
     return WardHomeResponseDto.builder()
         .consecutiveRecordingDays(audioStamps.getConsecutiveRecordingDays())
@@ -137,6 +143,7 @@ public class UserService {
         .audioId(diary.getAudioMetadata().getId())
         .title(diary.getTitle())
         .duration(diary.getAudioMetadata().getDuration())
+        .createdAt(diary.getCreatedAt().toLocalDate())
         .build();
   }
 
