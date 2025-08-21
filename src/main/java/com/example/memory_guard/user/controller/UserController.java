@@ -1,5 +1,7 @@
 package com.example.memory_guard.user.controller;
 
+import com.example.memory_guard.audio.service.AudioService;
+import com.example.memory_guard.diary.dto.WardCalendarResponseDto;
 import com.example.memory_guard.user.dto.*;
 import com.example.memory_guard.global.auth.dto.TokenDto;
 import com.example.memory_guard.user.service.UserService;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
   private final UserService userService;
+  private final AudioService audioService;
 
   @Value ("${jwt.refresh-token-expiration-seconds}")
   private long refreshTokenValiditySeconds;
@@ -98,6 +101,12 @@ public class UserController {
   public ResponseEntity<UserExistResponseDto> existUser(@PathVariable String userId){
     boolean exist = userService.existUserId(userId);
     return ResponseEntity.ok(new UserExistResponseDto(exist));
+  }
+
+  @GetMapping("/audio/calendar")
+  public ResponseEntity<WardCalendarResponseDto> getCalendar(@AuthenticationPrincipal User user) {
+    WardCalendarResponseDto response = audioService.getMonthlyAudioDates(user);
+    return ResponseEntity.ok(response);
   }
 
   @GetMapping("/home/user")

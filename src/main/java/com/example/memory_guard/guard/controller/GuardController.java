@@ -51,11 +51,6 @@ public class GuardController {
 //    ) {
 //        return ResponseEntity.ok(guardService.getCalendar(user));
 //    }
-    @GetMapping("/calendar")
-    public ResponseEntity<WardCalendarResponseDto> getCalendar(@AuthenticationPrincipal User user) {
-        WardCalendarResponseDto response = audioService.getMonthlyAudioDates(user);
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping("/setting")
     public ResponseEntity<List<GuardSettingResponseDto>> getSettings(

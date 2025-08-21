@@ -169,16 +169,21 @@ public class AudioService {
   }
 
   @Transactional(readOnly = true)
-  public WardCalendarResponseDto getMonthlyAudioDates(User guard) {
-    User persistGuard = userRepository.findById(guard.getId())
-        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+  public WardCalendarResponseDto getMonthlyAudioDates(User user) {
+    User persistentUser = userRepository.findById(user.getId())
+        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-    User ward = persistGuard.getPrimaryWard();
+    User ward;
+
+    boolean isGuard = persistentUser.getRoles().stream()
+        .anyMatch(role -> role.getName().equals("ROLE_GUARD"));
+
+    if (isGuard) ward = persistentUser.getPrimaryWard();
+    else ward = persistentUser;
+
     if (ward == null) {
       return WardCalendarResponseDto.builder().build();
     }
-
-
 
     LocalDate today = LocalDate.now();
     LocalDateTime startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay();
